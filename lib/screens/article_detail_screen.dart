@@ -1,34 +1,17 @@
+// file: article_detail_screen.dart
 import 'package:flutter/material.dart';
+import 'package:webview_flutter/webview_flutter.dart';
 
 class ArticleDetailScreen extends StatelessWidget {
-  final String title;
-  final String subtitle;
-  final String image;
+  final String url;
 
-  const ArticleDetailScreen({
-    super.key,
-    required this.title,
-    required this.subtitle,
-    required this.image,
-  });
+  const ArticleDetailScreen({super.key, required this.url});
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text(title)),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Image.network(image, width: double.infinity, height: 200, fit: BoxFit.cover),
-            const SizedBox(height: 16),
-            Text(title, style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
-            const SizedBox(height: 8),
-            Text(subtitle, style: const TextStyle(fontSize: 16)),
-          ],
-        ),
-      ),
+      appBar: AppBar(title: const Text("Chi tiết bài báo")),
+      body: WebViewWidget(controller: WebViewController()..loadRequest(Uri.parse(url))),
     );
   }
 }

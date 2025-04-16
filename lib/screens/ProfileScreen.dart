@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'dart:io';
 import '../screens/home_screen.dart';
+import '../models/user.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
@@ -15,14 +16,27 @@ class _ProfileScreenState extends State<ProfileScreen> {
   final TextEditingController _nicknameController = TextEditingController();
   final TextEditingController _heightController = TextEditingController();
   final TextEditingController _weightController = TextEditingController();
-
   String _selectedGender = "Nam";
-  String _selectedBirthDate = "Chọn ngày sinh";
+  String _selectedBirthDate = "Chưa chọn";
+  int _selectedActivityLevel = 1;
   File? _image;
-  int _selectedActivityLevel = 1; // Mặc định mức độ hoạt động là 1
+
 
   void _saveProfile() {
     if (_formKey.currentState!.validate()) {
+      User user = User(
+        id: DateTime.now().millisecondsSinceEpoch.toString(), // ID tự động
+        nickname: _nicknameController.text,
+        height: double.parse(_heightController.text),
+        weight: double.parse(_weightController.text),
+        gender: _selectedGender,
+        birthDate: _selectedBirthDate,
+        activityLevel: _selectedActivityLevel,
+        avatarUrl: _image, // Đảm bảo class User có thuộc tính này
+      );
+
+      print("Thông tin người dùng: $user");
+
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text("Cập nhật thông tin thành công!")),
       );
@@ -35,6 +49,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
       });
     }
   }
+
 
   Future<void> _pickImage(ImageSource source) async {
     final pickedFile = await ImagePicker().pickImage(source: source);

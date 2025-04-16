@@ -85,4 +85,5 @@ class DefaultFirebaseOptions {
     storageBucket: 'healthtrack-e34c1.firebasestorage.app',
     measurementId: 'G-4VJ9XQRNVG',
   );
+
 }
