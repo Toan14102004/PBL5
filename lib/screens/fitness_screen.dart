@@ -1,25 +1,41 @@
 import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
+import 'package:intl/intl.dart';
+
 
 import 'id_yte_screen.dart';
 class FitnessScreen extends StatelessWidget {
    FitnessScreen({super.key});
 
-  @override
+   List<DateTime> getLast7Days() {
+     final now = DateTime.now();
+     return List.generate(7, (index) {
+       final day = now.subtract(Duration(days: 6 - index));
+       return DateTime(day.year, day.month, day.day); // Chỉ lấy ngày, bỏ giờ
+     });
+   }
+
+   List<Map<String, dynamic>> last7Days = [
+     {'date': '2025-04-10', 'kcal': 320},
+     {'date': '2025-04-11', 'kcal': 450},
+     {'date': '2025-04-12', 'kcal': 500},
+     {'date': '2025-04-13', 'kcal': 400},
+     {'date': '2025-04-14', 'kcal': 600},
+     {'date': '2025-04-15', 'kcal': 700},
+     {'date': '2025-04-16', 'kcal': 550},
+   ];
+
+   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: Column(
           children: const [
             Text(
-              "Fitness Tracker",
+              "𝔽𝕚𝕥𝕟𝕖𝕤𝕤 𝕋𝕣𝕒𝕔𝕜𝕖𝕣",
               style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20),
             ),
-            SizedBox(height: 4), // K cách giữa 2 dòng
-            // Text(
-            //   "Hôm nay",
-            //   style: TextStyle(fontSize: 16, color: Colors.grey),
-            // ),
+            SizedBox(height: 4),
           ],
         ),
         centerTitle: true,
@@ -31,45 +47,29 @@ class FitnessScreen extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // _buildStatCard("⏱ Thời gian chạy", "35 phút"),
-              // _buildStatCard("🔥 Kcal đốt cháy", "250 kcal"),
-              // _buildStatCard("💓 Nhịp tim", "120 bpm"),
-
-              _OperatingEnergy("🔥 Năng lượng hoạt động ", "409 kcal"),
-              const SizedBox(height: 20),
+              _OperatingEnergy("🔥 𝓝𝓪̆𝓷𝓰 𝓵𝓾̛𝓸̛̣𝓷𝓰 𝓱𝓸𝓪̣𝓽 𝓭𝓸̣̂𝓷𝓰 ", "409 kcal"),
+              const SizedBox(height: 30),
               const Text(
                 "Biểu đồ hoạt động tuần qua",
                 style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
               ),
-              const SizedBox(height: 10),
-              _buildActivityChart(),
-              const SizedBox(height: 20),
-              _AverageTimeOfExercise("⏰  Số phút thể dục ","54"),
+              const SizedBox(height: 30),
+              // _buildActivityChart(),
+              buildActivityChart(last7Days),
+              const SizedBox(height: 35),
+              _AverageTimeOfExercise("⏰  𝓢𝓸̂́ 𝓹𝓱𝓾́𝓽 𝓽𝓱𝓮̂̉ 𝓭𝓾̣𝓬 ","54"),
+              const SizedBox(height: 30),
               const Text(
                 "Biểu đồ thời gian hoạt động tuần qua",
                 style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
               ),
               const SizedBox(height: 20),
               _buildTimeChart(),
-              const SizedBox(height: 20),
+              const SizedBox(height: 40),
               _buildUpdateHealthIdCard(context), // truyền context ở đây
             ],
           ),
         ),
-      ),
-    );
-  }
-
-  /// Widget hiển thị các chỉ số chạy bộ
-  Widget _buildStatCard(String title, String value) {
-    return Card(
-      color: Colors.blue.shade100,
-      margin: const EdgeInsets.symmetric(vertical: 8),
-      child: ListTile(
-        leading: const Icon(Icons.fitness_center, color: Colors.blue),
-        title: Text(title, style: const TextStyle(fontSize: 16)),
-        trailing: Text(value,
-            style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
       ),
     );
   }
@@ -107,40 +107,63 @@ class FitnessScreen extends StatelessWidget {
     );
   }
 
+
+   final List<FlSpot> weeklyData = [
+     FlSpot(0, 30),
+     FlSpot(1, 45),
+     FlSpot(2, 20),
+     FlSpot(3, 60),
+     FlSpot(4, 50),
+     FlSpot(5, 40),
+     FlSpot(6, 35),
+   ];
+   /// Hàm tạo dữ liệu cho biểu đồ cột
+   BarChartGroupData _buildBarData(int x, double y) {
+     return BarChartGroupData(
+       x: x,
+       barRods: [
+         BarChartRodData(
+           toY: y,
+           color: Colors.orangeAccent, // Màu cam cho kcal
+           width: 16,
+         )
+       ],
+     );
+   }
+
    /// Biểu đồ hoạt động trong tuần (kcal tiêu hao)
-   Widget _buildActivityChart() {
+   Widget buildActivityChart(List<Map<String, dynamic>> last7Days) {
      return SizedBox(
-       height: 200,
+       height: 220,
        child: BarChart(
          BarChartData(
-           barGroups: [
-             _buildBarData(0, 300), // Thứ 2: 300 kcal
-             _buildBarData(1, 450), // Thứ 3: 450 kcal
-             _buildBarData(2, 500), // Thứ 4: 500 kcal
-             _buildBarData(3, 400), // Thứ 5: 400 kcal
-             _buildBarData(4, 600), // Thứ 6: 600 kcal
-             _buildBarData(5, 700), // Thứ 7: 700 kcal
-             _buildBarData(6, 550), // Chủ Nhật: 550 kcal
-           ],
+           barGroups: List.generate(last7Days.length, (index) {
+             final kcal = last7Days[index]['kcal'].toDouble();
+             return BarChartGroupData(
+               x: index,
+               barRods: [
+                 BarChartRodData(toY: kcal, width: 16, color: Colors.orange),
+               ],
+             );
+           }),
            titlesData: FlTitlesData(
              leftTitles: AxisTitles(
                sideTitles: SideTitles(
                  showTitles: true,
-                 reservedSize: 40, // Để chữ kcal không bị cắt
+                 reservedSize: 40,
                  getTitlesWidget: (value, meta) {
                    if (value == 0) {
                      return Padding(
                        padding: const EdgeInsets.only(right: 8),
-                       child: Text(
-                         '0 kcal', // Ghi đơn vị kcal 1 lần ở vị trí 0
-                         style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
-                       ),
+                       child: Text('0 kcal',
+                           style: const TextStyle(
+                               fontSize: 12, fontWeight: FontWeight.bold)),
                      );
                    }
                    return Padding(
                      padding: const EdgeInsets.only(right: 8),
                      child: Text(
-                       '${value.toInt()}', // Chỉ hiển thị số, không có kcal
+                       '${value.toInt()}',
                        style: const TextStyle(fontSize: 12),
                      ),
                    );
@@ -151,23 +174,28 @@ class FitnessScreen extends StatelessWidget {
                sideTitles: SideTitles(
                  showTitles: true,
                  getTitlesWidget: (value, meta) {
-                   const days = ["T2", "T3", "T4", "T5", "T6", "T7", "CN"];
+                   int index = value.toInt();
+                   if (index < 0 || index >= last7Days.length) return const SizedBox();
+                   String date = last7Days[index]['date'];
+                   final parsed = DateTime.parse(date);
+                   final formatted = DateFormat('dd/MM').format(parsed);
                    return Padding(
                      padding: const EdgeInsets.only(top: 8),
-                     child: Text(days[value.toInt()],
-                         style: const TextStyle(fontSize: 12)),
+                     child: Text(
+                       formatted,
+                       style: const TextStyle(fontSize: 12),
+                     ),
                    );
                  },
                ),
              ),
-             topTitles: const AxisTitles( // Ẩn số liệu phía trên
+             topTitles: const AxisTitles(
                sideTitles: SideTitles(showTitles: false),
              ),
-             rightTitles: const AxisTitles( // Ẩn số liệu phía phải
+             rightTitles: const AxisTitles(
                sideTitles: SideTitles(showTitles: false),
              ),
            ),
-
            borderData: FlBorderData(show: false),
            gridData: const FlGridData(show: true),
          ),
@@ -207,20 +235,11 @@ class FitnessScreen extends StatelessWidget {
     );
   }
 
-
-   final List<FlSpot> weeklyData = [
-     FlSpot(0, 30),
-     FlSpot(1, 45),
-     FlSpot(2, 20),
-     FlSpot(3, 60),
-     FlSpot(4, 50),
-     FlSpot(5, 40),
-     FlSpot(6, 35),
-   ];
-   /// Biểu đồ thời gian hoạt động trong tuần (giờ)
    Widget _buildTimeChart() {
+     final List<DateTime> last7Days = List.generate(7, (i) => DateTime.now().subtract(Duration(days: 6 - i)));
+
      return SizedBox(
-       height: 250, // bạn có thể điều chỉnh chiều cao theo mong muốn
+       height: 250,
        child: LineChart(
          LineChartData(
            minX: 0,
@@ -233,16 +252,12 @@ class FitnessScreen extends StatelessWidget {
                sideTitles: SideTitles(
                  showTitles: true,
                  getTitlesWidget: (value, meta) {
-                   const days = ['T2', 'T3', 'T4', 'T5', 'T6', 'T7', 'CN'];
-                   if (value.toInt() < 0 || value.toInt() >= days.length) return const SizedBox();
-                   // Chỉ hiển thị nếu là số nguyên
-                   if (value % 1 != 0) return const SizedBox();
+                   int index = value.toInt();
+                   if (index < 0 || index >= 7 || value % 1 != 0) return const SizedBox();
+                   final dayLabel = DateFormat('dd/MM').format(last7Days[index]);
                    return Padding(
                      padding: const EdgeInsets.only(top: 8.0),
-                     child: Text(
-                       days[value.toInt()],
-                       style: TextStyle(fontSize: 12),
-                     ),
+                     child: Text(dayLabel, style: const TextStyle(fontSize: 12)),
                    );
                  },
                ),
@@ -271,22 +286,6 @@ class FitnessScreen extends StatelessWidget {
        ),
      );
    }
-
-
-   /// Hàm tạo dữ liệu cho biểu đồ cột
-  BarChartGroupData _buildBarData(int x, double y) {
-    return BarChartGroupData(
-      x: x,
-      barRods: [
-        BarChartRodData(
-          toY: y,
-          color: Colors.orangeAccent, // Màu cam cho kcal
-          width: 16,
-        )
-      ],
-    );
-  }
-
 
   /// Widget cho title "C  nh t ID y t  của b n " v i text "Trong tr ng h p kh n c p , i u quan tr ng l  nh ng ng i ph n h i u tin c  nh t " v  th m 1 button b t u m i
    Widget _buildUpdateHealthIdCard(BuildContext context) {

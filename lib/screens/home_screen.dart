@@ -3,16 +3,17 @@ import 'package:fl_chart/fl_chart.dart';
 import '../widgets/custom_app_bar.dart';
 import '../widgets/health_card.dart';
 import '../models/article.dart';
-import '../models/DayActive.dart';
+import '../models/Record.dart';
 import '../widgets/bottom_nav_bar.dart';
 import 'fitness_screen.dart';
 import 'ProfileScreen.dart';
-import 'together_screen.dart';
 import 'Notification_screen.dart';
 import 'activity_screen.dart';
 import 'article_detail_screen.dart';
+import 'running_screen.dart';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
+import '../Data/mock_data.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -26,7 +27,6 @@ class _HomeScreenState extends State<HomeScreen> {
 
   final List<Widget> _screens = [
     HomeContent(),
-    // TogetherPage(),
     FitnessScreen(),
     ProfileScreen(),
     NotificationScreen(),
@@ -93,52 +93,6 @@ class _HomeContentState extends State<HomeContent> {
       });
     }
   }
-
-  //Hàm tạo biểu đồ từ danh sách DayActive
-  List<PieChartSectionData> createChartSections(List<DayActive> activities) {
-    // Bước 1: Nhóm theo activityType và đếm số lượng
-    Map<String, int> activityCounts = {};
-
-    for (var activity in activities) {
-      activityCounts[activity.activityType] =
-          (activityCounts[activity.activityType] ?? 0) + 1;
-    }
-
-    // Bước 2: Tổng số hoạt động
-    int total = activityCounts.values.fold(0, (a, b) => a + b);
-
-    // Bước 3: Định nghĩa màu cho từng loại
-    Map<String, Color> colorMap = {
-      "Chạy bộ": Colors.blue,
-      "Đạp xe": Colors.red,
-      "Đi bộ": Colors.green,
-      "Ngồi thiền": Colors.orange,
-    };
-
-    // Bước 4: Chuyển sang PieChartSectionData
-    List<PieChartSectionData> sections = [];
-
-    activityCounts.forEach((type, count) {
-      double percent = (count / total) * 100;
-      sections.add(PieChartSectionData(
-        color: colorMap[type] ?? Colors.grey,
-        value: percent,
-        title: "${percent.toStringAsFixed(0)}%",
-        radius: 60,
-        titleStyle: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
-      ));
-    });
-
-    return sections;
-  }
-
-  //lấy dữ liệu từ Firebase
-  // Future<List<DayActive>> fetchActivitiesFromFirebase() async {
-  //   final snapshot = await FirebaseFirestore.instance.collection('day_activities').get();
-  //   return snapshot.docs.map((doc) => DayActive.fromMap(doc.data(), doc.id)).toList();
-  // }
-
-
   @override
   Widget build(BuildContext context) {
     return SingleChildScrollView(
@@ -149,6 +103,31 @@ class _HomeContentState extends State<HomeContent> {
            HealthCard(title: "🏃 Di chuyển", value: "40264 m", onTap: () => _navigateToActivityScreen(context)),
            HealthCard(title: "⏱ Thời gian", value: "3 giờ",onTap: () => _navigateToActivityScreen(context),),
            HealthCard(title: "🔥 Kcal đốt cháy", value: "250 kcal",onTap: () => _navigateToActivityScreen(context),),
+// chạy bộ
+            Center(
+              child: Padding(
+                padding: const EdgeInsets.symmetric(vertical: 16.0),
+                child: ElevatedButton.icon(
+                  onPressed: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) => const RunningScreen()),
+                    );
+                  },
+                  icon: Icon(Icons.directions_run),
+                  label: Text("Bắt đầu chạy bộ"),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.blue,
+                    foregroundColor: Colors.white,
+                    padding: EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                    textStyle: TextStyle(fontSize: 16),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                ),
+              ),
+            ),
 
           // Biểu đồ hình tròn
           Padding(
@@ -180,9 +159,9 @@ class _HomeContentState extends State<HomeContent> {
                       _buildLegend("🚴 Đạp xe", Colors.red),
                       _buildLegend("🚶 Đi bộ", Colors.green),
                       _buildLegend("🧘 Ngồi", Colors.orange),
-                      _buildLegend("🛌 Nằm", Colors.orange),
-                      _buildLegend("🐥 Đứng", Colors.orange),
-                      _buildLegend("🧘 Leo cầu thang", Colors.orange),
+                      _buildLegend("🛌 Nằm", Colors.pink),
+                      _buildLegend("🐥 Đứng", Colors.purple),
+                      _buildLegend("🧘 Leo cầu thang", Colors.brown),
                     ],
                   ),
                 ),
@@ -198,7 +177,7 @@ class _HomeContentState extends State<HomeContent> {
                 style: TextStyle(
                   fontSize: 16,
                   color: Colors.grey,
-                  fontStyle: FontStyle.italic, // Chữ in nghiêng
+                  fontStyle: FontStyle.italic,
                 ),
               ),
             ),
@@ -291,47 +270,119 @@ class _HomeContentState extends State<HomeContent> {
 
 // Biểu đồ hình tròn
 class PieChartWidget extends StatelessWidget {
+
+  List<Record> sampleRecords = [
+    Record(
+      startTime: "2025-04-13T07:00:00",
+      endTime: "2025-04-13T07:00:10",
+      dayActiveId: "d1",
+      activityType: "Chạy bộ", // 30 phút
+    ),
+    Record(
+
+      startTime: "2025-04-13T08:00:00",
+      endTime: "2025-04-13T08:40:00",
+      dayActiveId: "d1",
+      activityType: "Đạp xe", // 40 phút
+    ),
+    Record(
+
+      startTime: "2025-04-13T09:00:00",
+      endTime: "2025-04-13T09:20:00",
+      dayActiveId: "d1",
+      activityType: "Đi bộ", // 20 phút
+    ),
+    Record(
+
+      startTime: "2025-04-13T10:00:00",
+      endTime: "2025-04-13T10:50:00",
+      dayActiveId: "d1",
+      activityType: "Ngồi", // 50 phút
+    ),
+    Record(
+
+      startTime: "2025-04-13T11:00:00",
+      endTime: "2025-04-13T11:45:00",
+      dayActiveId: "d1",
+      activityType: "Nằm", // 45 phút
+    ),
+    Record(
+
+      startTime: "2025-04-13T12:00:00",
+      endTime: "2025-04-13T12:10:00",
+      dayActiveId: "d1",
+      activityType: "Đứng", // 10 phút
+    ),
+  ];
+
+
+  List<PieChartSectionData> createChartSectionsFromRecords(List<Record> records) {
+    Map<String, Duration> activityDurations = {};
+
+    for (var record in records) {
+      DateTime start = DateTime.parse(record.startTime);
+      DateTime end = DateTime.parse(record.endTime);
+
+      if (end.isAfter(start)) {
+        Duration duration = end.difference(start);
+        activityDurations[record.activityType] =
+            (activityDurations[record.activityType] ?? Duration()) + duration;
+      }
+    }
+
+    Duration totalDuration = activityDurations.values.fold(
+      Duration(),
+          (sum, dur) => sum + dur,
+    );
+
+    if (totalDuration.inSeconds == 0) return [];
+
+    Map<String, Color> colorMap = {
+      "Chạy bộ": Colors.blue,
+      "Đạp xe": Colors.red,
+      "Đi bộ": Colors.green,
+      "Ngồi": Colors.orange,
+      "Nằm": Colors.pink,
+      "Đứng": Colors.purple,
+      "Leo cầu thang": Colors.brown,
+    };
+
+    List<PieChartSectionData> sections = [];
+
+    activityDurations.forEach((activity, duration) {
+      double percent = duration.inSeconds / totalDuration.inSeconds * 100;
+      sections.add(PieChartSectionData(
+        color: colorMap[activity] ?? Colors.grey,
+        value: percent,
+        title: "${percent.toStringAsFixed(0)}%",
+        radius: 60,
+        titleStyle: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+      ));
+    });
+
+    return sections;
+  }
+
   @override
   Widget build(BuildContext context) {
+    List<PieChartSectionData> sections = createChartSectionsFromRecords(sampleRecords);
+
+    if (sections.isEmpty) {
+      return Center(
+        child: Text(
+          'Dữ liệu đang được cập nhật\nXin bạn chờ trong giây lát...',
+          style: TextStyle(fontSize: 16, color: Colors.grey),
+          textAlign: TextAlign.center,
+        ),
+      );
+    }
+
     return PieChart(
       PieChartData(
-        sections: _chartSections(),
-        centerSpaceRadius: 50,
+        sections: sections,
+        centerSpaceRadius: 40,
         sectionsSpace: 2,
       ),
     );
-  }
-
-  List<PieChartSectionData> _chartSections() {
-    return [
-      PieChartSectionData(
-        color: Colors.blue,
-        value: 40,
-        title: '40%',
-        radius: 60,
-        titleStyle: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
-      ),
-      PieChartSectionData(
-        color: Colors.red,
-        value: 30,
-        title: '30%',
-        radius: 60,
-        titleStyle: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
-      ),
-      PieChartSectionData(
-        color: Colors.green,
-        value: 20,
-        title: '20%',
-        radius: 60,
-        titleStyle: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
-      ),
-      PieChartSectionData(
-        color: Colors.orange,
-        value: 10,
-        title: '10%',
-        radius: 60,
-        titleStyle: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
-      ),
-    ];
   }
 }

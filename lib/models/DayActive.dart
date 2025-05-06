@@ -1,50 +1,26 @@
-// class DayActive {
-//   String id;
-//   String userId;
-//   String date;
-//
-//   DayActive({
-//     required this.id,
-//     required this.userId,
-//     required this.date,
-//   });
-//   // Chuyển từ Map -> Object
-//   factory DayActive.fromMap(Map<String, dynamic> map, String documentId) {
-//     return DayActive(
-//       id: documentId,
-//       userId: map['user_id'] ?? '',
-//       date: map['date'] ?? '',
-//     );
-//   }
-//
-//   Map<String, dynamic> toMap() {
-//     return {
-//       'user_id': userId,
-//       'date': date,
-//     };
-//   }
-// }
-
+import '../models/Record.dart';
 
 class DayActive {
   String id;
   String userId;
   String date;
-  String activityType; // 🆕 Thêm field này
+  List<Record> records;
 
   DayActive({
     required this.id,
     required this.userId,
     required this.date,
-    required this.activityType,
+    required this.records,
   });
-// Chuyển từ Map -> Object
-  factory DayActive.fromMap(Map<String, dynamic> map, String documentId) {
+
+  factory DayActive.fromMap(Map<String, dynamic> map) {
     return DayActive(
-      id: documentId,
+      id: map['id'] ?? '',
       userId: map['user_id'] ?? '',
       date: map['date'] ?? '',
-      activityType: map['activity_type'] ?? '', // lấy từ Firebase
+      records: (map['records'] as List)
+          .map((record) => Record.fromMap(record))
+          .toList(),
     );
   }
 
@@ -52,7 +28,7 @@ class DayActive {
     return {
       'user_id': userId,
       'date': date,
-      'activity_type': activityType,
+      'records': records.map((record) => record.toMap()).toList(),
     };
   }
 }

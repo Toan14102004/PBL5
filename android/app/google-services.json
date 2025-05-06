@@ -1,13 +1,33 @@
 {
   "project_info": {
-    "project_number": "897214574604",
-    "project_id": "healthtrack-e34c1",
-    "storage_bucket": "healthtrack-e34c1.firebasestorage.app"
+    "project_number": "1071718031269",
+    "firebase_url": "https://healthyapp-15f68-default-rtdb.firebaseio.com",
+    "project_id": "healthyapp-15f68",
+    "storage_bucket": "healthyapp-15f68.firebasestorage.app"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:897214574604:android:29e373458dbb7516c17e29",
+        "mobilesdk_app_id": "1:1071718031269:android:ca473ae27e9b17d963124c",
+        "android_client_info": {
+          "package_name": "com.example.goodfood"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCP6q8671fPWnAQtDVPt0ozAyDqsHvnON0"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1071718031269:android:eb8fd1d13ee22d2563124c",
         "android_client_info": {
           "package_name": "com.example.health_app_ui"
         }
@@ -15,7 +35,26 @@
       "oauth_client": [],
       "api_key": [
         {
-          "current_key": "AIzaSyAJuuPqxLeNcA4cICTmfb5zxkMFFh4QybY"
+          "current_key": "AIzaSyCP6q8671fPWnAQtDVPt0ozAyDqsHvnON0"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1071718031269:android:1355b5612b176f0f63124c",
+        "android_client_info": {
+          "package_name": "com.example.health_track_app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCP6q8671fPWnAQtDVPt0ozAyDqsHvnON0"
         }
       ],
       "services": {

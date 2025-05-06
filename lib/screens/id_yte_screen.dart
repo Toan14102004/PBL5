@@ -12,6 +12,8 @@ class _IdYteScreenState extends State<IdYteScreen> {
   final TextEditingController bloodGroupController = TextEditingController();
   final TextEditingController heartRateController = TextEditingController();
   final TextEditingController emergencyContactController = TextEditingController();
+  Map<String, dynamic> userInfo = {};
+
 
   @override
   Widget build(BuildContext context) {
@@ -130,8 +132,36 @@ class _IdYteScreenState extends State<IdYteScreen> {
               children: [
                 ElevatedButton(
                   onPressed: () {
-                    // Quay lại trang trước khi nhấn nút
-                    Navigator.pop(context);
+                    // Lưu thông tin vào Map
+                    setState(() {
+                      userInfo = {
+                        'allergy': allergyController.text,
+                        'bloodGroup': bloodGroupController.text,
+                        'heartRate': heartRateController.text,
+                        'emergencyContact': emergencyContactController.text,
+                      };
+                    });
+
+                    // Hiển thị AlertDialog
+                    showDialog(
+                      context: context,
+                      barrierDismissible: false, // Không cho bấm ra ngoài để tắt
+                      builder: (BuildContext context) {
+                        // Sau 2 giây thì tự tắt dialog và quay lại
+                        Future.delayed(const Duration(seconds: 2), () {
+                          Navigator.of(context).pop(); // đóng dialog
+                          Navigator.of(context).pop(); // quay lại trang trước
+                        });
+
+                        return AlertDialog(
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(20),
+                          ),
+                          title: const Text('🎉 Cập nhật thành công!'),
+                          content: const Text('Thông tin của bạn đã được lưu.'),
+                        );
+                      },
+                    );
                   },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.blue,
