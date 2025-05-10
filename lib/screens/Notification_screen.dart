@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import '../services/notification_service.dart';
+import '../models/activity_notification.dart'; // import model ActivityNotification
 
 class NotificationScreen extends StatefulWidget {
   const NotificationScreen({super.key});
@@ -8,41 +11,53 @@ class NotificationScreen extends StatefulWidget {
 }
 
 class _NotificationScreenState extends State<NotificationScreen> {
+  final NotificationService _notificationService = NotificationService();
+  List<ActivityNotification> _notifications = []; // Đổi kiểu dữ liệu thành ActivityNotification
+  bool _loading = true;
+  String? _error;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadNotifications();
+  }
+
+  Future<void> _loadNotifications() async {
+    try {
+      // Tạm dùng user ID cố định để test
+      const userId = 'user_1029357990';
+      final data = await _notificationService.fetchNotificationsFromActivities(userId);
+
+      setState(() {
+        _notifications = data; // Sử dụng ActivityNotification thay vì Map
+        _loading = false;
+      });
+    } catch (e) {
+      setState(() {
+        _error = 'Lỗi khi tải thông báo: $e';
+        _loading = false;
+      });
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Padding(
+      appBar: AppBar(title: const Text('Thông báo')),
+      body: _loading
+          ? const Center(child: CircularProgressIndicator())
+          : _error != null
+          ? Center(child: Text(_error!, style: const TextStyle(color: Colors.red)))
+          : _notifications.isEmpty
+          ? const Center(child: Text('Không có thông báo nào.'))
+          : ListView.builder(
         padding: const EdgeInsets.all(16.0),
-        child: ListView(
-          children: [
-            const Text("Thông báo", style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold)),
-
-            const SizedBox(height: 12),
-            _buildSectionTitle("Mới"),
-            _buildNotificationCard("🚨 Cảnh báo té ngã!", "Chúng tôi đã phát hiện một cú ngã. Vui lòng kiểm tra ngay!"),
-            _buildNotificationCard("🏃‍♂️ Chúc mừng!", "Bạn vừa hoàn thành một quãng đường chạy mới."),
-
-            const SizedBox(height: 12),
-            _buildSectionTitle("Hôm nay"),
-            _buildNotificationCard("⏳ Bạn đã ngồi liên tục 2 giờ.", "Hãy đứng lên vận động một chút nào!"),
-            _buildNotificationCard("✨ Bạn đã chạy tổng cộng 5km hôm nay!", "Cố gắng duy trì phong độ nhé!"),
-
-            const SizedBox(height: 12),
-            _buildSectionTitle("Trước đó"),
-            _buildNotificationCard("🔴 Bạn có một cú ngã vào hôm qua.", "Hãy kiểm tra lại tình trạng sức khỏe của bạn."),
-            _buildNotificationCard("🏆 Thành tích tuần trước: 20km!", "Hãy xem liệu bạn có thể phá kỷ lục đó không!"),
-            _buildNotificationCard("📉 Hoạt động của bạn đang giảm.", "Hãy cố gắng đi bộ hoặc chạy bộ nhiều hơn!"),
-          ],
-        ),
+        itemCount: _notifications.length,
+        itemBuilder: (context, index) {
+          final notification = _notifications[index];
+          return _buildNotificationCard(notification.title, notification.content); // Sử dụng ActivityNotification
+        },
       ),
-      // bottomNavigationBar: const BottomNavBar(),
-    );
-  }
-
-  Widget _buildSectionTitle(String title) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 8.0),
-      child: Text(title, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
     );
   }
 
