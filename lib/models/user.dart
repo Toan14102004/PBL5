@@ -61,7 +61,9 @@ class User {
   String gender;
   String birthDate;
   int activityLevel;
-  File? avatarUrl;
+  // File? avatarUrl;
+  final String avatarUrl; // phải là String
+
 
   List<DayActive>? dayActivities;
 
@@ -73,7 +75,8 @@ class User {
     required this.gender,
     required this.birthDate,
     required this.activityLevel,
-    this.avatarUrl,
+    // this.avatarUrl,
+    required this.avatarUrl,
     this.dayActivities,
   });
   // Chuyển từ Map -> Object

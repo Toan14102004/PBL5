@@ -1,67 +1,108 @@
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'dart:io';
-import '../screens/home_screen.dart';
 import '../models/user.dart';
+import '../services/profile_service.dart';
+import 'home_screen.dart';
 
 class ProfileScreen extends StatefulWidget {
-  const ProfileScreen({super.key});
+  final String userId;
+
+  const ProfileScreen({super.key, required this.userId});
 
   @override
   State<ProfileScreen> createState() => _ProfileScreenState();
 }
 
 class _ProfileScreenState extends State<ProfileScreen> {
+  User? _user;
+  bool _isLoading = true;
+
   final _formKey = GlobalKey<FormState>();
-  final TextEditingController _nicknameController = TextEditingController();
-  final TextEditingController _heightController = TextEditingController();
-  final TextEditingController _weightController = TextEditingController();
+  final _nicknameController = TextEditingController();
+  final _heightController = TextEditingController();
+  final _weightController = TextEditingController();
   String _selectedGender = "Nam";
-  String _selectedBirthDate = "Chưa chọn";
+  String _selectedBirthDate = "";
   int _selectedActivityLevel = 1;
+  String imageUrl = "assets/default-avatar.png";
   File? _image;
 
+  @override
+  void initState() {
+    super.initState();
+    _loadUserProfile();
+  }
 
-  void _saveProfile() {
+  void _loadUserProfile() async {
+    final user = await ProfileService.getUserProfile(widget.userId);
+    if (user != null) {
+      setState(() {
+        _user = user;
+        _nicknameController.text = user.nickname;
+        _heightController.text = user.height.toString();
+        _weightController.text = user.weight.toString();
+        _selectedGender = user.gender;
+        _selectedBirthDate = user.birthDate;
+        _selectedActivityLevel = user.activityLevel;
+        imageUrl = user.avatarUrl;
+        _isLoading = false;
+      });
+    } else {
+      setState(() {
+        _isLoading = false;
+      });
+    }
+  }
+
+
+  Future<void> _saveProfile() async {
     if (_formKey.currentState!.validate()) {
+      String avatarUrl = "assets/default_avatar.png";
+
+      if (_image != null) {
+        avatarUrl = await ProfileService.uploadImage(_image!, context);
+      }
+
       User user = User(
-        id: DateTime.now().millisecondsSinceEpoch.toString(), // ID tự động
+        id: widget.userId,
         nickname: _nicknameController.text,
         height: double.parse(_heightController.text),
         weight: double.parse(_weightController.text),
         gender: _selectedGender,
         birthDate: _selectedBirthDate,
         activityLevel: _selectedActivityLevel,
-        avatarUrl: _image, // Đảm bảo class User có thuộc tính này
+        avatarUrl: avatarUrl,
       );
 
-      print("Thông tin người dùng: $user");
-
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Cập nhật thông tin thành công!")),
-      );
+      await ProfileService.saveProfile(user, avatarUrl);
 
       Future.delayed(const Duration(seconds: 2), () {
         Navigator.pushReplacement(
           context,
-          MaterialPageRoute(builder: (context) => HomeScreen()),
+          MaterialPageRoute(builder: (context) => HomeScreen(userId: 'user_1029357990')),
         );
       });
     }
   }
 
-
   Future<void> _pickImage(ImageSource source) async {
     final pickedFile = await ImagePicker().pickImage(source: source);
     if (pickedFile != null) {
       setState(() {
-        _image = File(pickedFile.path);
+        _image = File(pickedFile.path); // Đảm bảo ảnh đã được chọn
       });
     }
   }
 
+
   @override
   Widget build(BuildContext context) {
+    if (_isLoading) {
+      return const Scaffold(
+        body: Center(child: CircularProgressIndicator()),
+      );
+    }
     return Scaffold(
       appBar: AppBar(title: const Text("Hồ sơ cá nhân")),
       body: SingleChildScrollView(
@@ -78,7 +119,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       radius: 50,
                       backgroundImage: _image != null
                           ? FileImage(_image!)
-                          : const AssetImage("assets/default_avatar.png") as ImageProvider,
+                          : (imageUrl.startsWith("http")
+                          ? NetworkImage(imageUrl)
+                          : AssetImage(imageUrl) as ImageProvider),
                     ),
                     Positioned(
                       right: 0,
@@ -95,7 +138,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
               TextFormField(
                 controller: _nicknameController,
                 decoration: const InputDecoration(
-                  labelText: "Biệt danh...",
+                  // labelText: "Biệt danh...",
                   border: OutlineInputBorder(),
                 ),
                 validator: (value) {

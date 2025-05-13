@@ -40,6 +40,7 @@ dependencies:
   firebase_core: ^3.12.1  # Đảm bảo rằng firebase_core có phiên bản phù hợp
   firebase_database: ^11.3.4  # Nâng cấp firebase_database lên phiên bản mới nhất
   firebase_auth: ^5.5.1
+  firebase_storage: ^12.4.4
   cloud_firestore: ^5.6.5
   google_maps_flutter: ^2.11.0
   webview_flutter: ^4.10.0
@@ -47,6 +48,7 @@ dependencies:
 
   flutter_localizations:
     sdk: flutter
+  font_awesome_flutter: ^10.8.0
 
 dev_dependencies:
   flutter_test:
@@ -70,6 +72,7 @@ flutter:
       - assets/images/id_yte.png
       - assets/default_avatar.png
       - assets/images/running.gif
+      - assets/images/notification.gif
   # The following line ensures that the Material Icons font is
   # included with your application, so that you can use the icons in
   # the material Icons class.

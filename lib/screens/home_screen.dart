@@ -16,7 +16,9 @@ import 'package:http/http.dart' as http;
 import '../Data/mock_data.dart';
 
 class HomeScreen extends StatefulWidget {
-  const HomeScreen({super.key});
+  final String userId;
+  const HomeScreen({Key? key, required this.userId}) : super(key: key);
+  // const HomeScreen({super.key});
 
   @override
   State<HomeScreen> createState() => _HomeScreenState();
@@ -25,12 +27,12 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> {
   int _selectedIndex = 0;
 
-  final List<Widget> _screens = [
-    HomeContent(),
-    FitnessScreen(),
-    ProfileScreen(),
-    NotificationScreen(),
-  ];
+  // final List<Widget> _screens = [
+  //   HomeContent(),
+  //   FitnessScreen(),
+  //   ProfileScreen(userId: widget.userId),
+  //   NotificationScreen(),
+  // ];
 
   void _onItemTapped(int index) {
     setState(() {
@@ -40,6 +42,12 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final List<Widget> _screens = [
+      HomeContent(),
+      FitnessScreen(),
+      ProfileScreen(userId: widget.userId),
+      NotificationScreen(),
+    ];
     return Scaffold(
       backgroundColor: Color(0xFFF5F5F5),
       appBar: const CustomAppBar(),
@@ -67,6 +75,7 @@ class _HomeContentState extends State<HomeContent> {
   @override
   void initState() {
     super.initState();
+    // print("User ID: ${widget.userId}");
     fetchArticles();
   }
 
