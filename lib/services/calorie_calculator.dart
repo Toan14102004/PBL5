@@ -31,9 +31,9 @@ class CalorieCalculator {
 
   // Tính kcal cho một khoảng thời gian hoạt động
   double calculateCalories(DateTime start, DateTime end, String activityType, double weightKg) {
-    final durationMinutes = end.difference(start).inMinutes;
+    final durationSeconds = end.difference(start).inSeconds;
     final met = getMET(activityType);
-    return (met * weightKg * durationMinutes) / 60;
+    return (met * weightKg * durationSeconds) / 3600;
   }
 
   Future<double> fetchAndCalculateAndUpload() async {
@@ -51,7 +51,7 @@ class CalorieCalculator {
     final weightKg = double.tryParse(weightSnapshot.value.toString()) ?? 0.0;
     print('✅ Cân nặng của user: $weightKg kg');
 
-    //  2. Lấy dữ liệu hoạt động từ Realtime Database
+    // ✅ 2. Lấy dữ liệu hoạt động từ Realtime Database
     final dbRef = FirebaseDatabase.instance.ref("activity_records");
     final snapshot = await dbRef.get();
 
@@ -69,9 +69,9 @@ class CalorieCalculator {
       if (dayData['user_id'] != userId) continue;
 
       final String date = dayData['date'];
-      // final recordsList = List<Map<String, dynamic>>.from(dayData['records']);
-      final recordsMap = Map<String, dynamic>.from(dayData['records']);
-      final recordsList = recordsMap.values.map((e) => Map<String, dynamic>.from(e)).toList();
+      final recordsList = List<Map<dynamic, dynamic>>.from(dayData['records']);
+      // final recordsMap = Map<String, dynamic>.from(dayData['records']);
+      // final recordsList = recordsMap.values.map((e) => Map<String, dynamic>.from(e)).toList();
 
 
       double dailyKcal = 0.0;
