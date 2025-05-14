@@ -1,5 +1,7 @@
+import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
+import '../services/calorie_calculator.dart';
 import '../widgets/custom_app_bar.dart';
 import '../widgets/health_card.dart';
 import '../models/article.dart';
@@ -13,7 +15,6 @@ import 'article_detail_screen.dart';
 import 'running_screen.dart';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
-import '../Data/mock_data.dart';
 
 class HomeScreen extends StatefulWidget {
   final String userId;
@@ -26,14 +27,6 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   int _selectedIndex = 0;
-
-  // final List<Widget> _screens = [
-  //   HomeContent(),
-  //   FitnessScreen(),
-  //   ProfileScreen(userId: widget.userId),
-  //   NotificationScreen(),
-  // ];
-
   void _onItemTapped(int index) {
     setState(() {
       _selectedIndex = index;
@@ -43,7 +36,7 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   Widget build(BuildContext context) {
     final List<Widget> _screens = [
-      HomeContent(),
+      HomeContent(userId: widget.userId),
       FitnessScreen(),
       ProfileScreen(userId: widget.userId),
       NotificationScreen(),
@@ -61,7 +54,9 @@ class _HomeScreenState extends State<HomeScreen> {
 }
 
 class HomeContent extends StatefulWidget {
-  const HomeContent({super.key});
+  final String userId;
+
+  const HomeContent({Key? key, required this.userId}) : super(key: key);
 
   @override
   State<HomeContent> createState() => _HomeContentState();
@@ -71,13 +66,51 @@ class _HomeContentState extends State<HomeContent> {
   List<Article> _articles = [];
   bool _isLoading = true;
   int visibleCount = 5;
+  double _totalCalories = 0.0;
 
   @override
   void initState() {
     super.initState();
-    // print("User ID: ${widget.userId}");
     fetchArticles();
+    printAllCaloriesData();
+    fetchAndCalculateCalories();
   }
+
+  Future<void> printAllCaloriesData() async {
+    final dbRef = FirebaseDatabase.instance.ref("daily_calories");
+    final snapshot = await dbRef.get();
+
+    if (!snapshot.exists) {
+      print('⚠️ Không có dữ liệu trong nút daily_calories.');
+      return;
+    }
+
+    final data = Map<String, dynamic>.from(snapshot.value as Map);
+
+    print('📋 Dữ liệu trong daily_calories:');
+    for (final userEntry in data.entries) {
+      final userId = userEntry.key;
+      final dailyRecords = Map<String, dynamic>.from(userEntry.value);
+
+      for (final dayEntry in dailyRecords.entries) {
+        final date = dayEntry.key;
+        final record = Map<String, dynamic>.from(dayEntry.value);
+
+        final calories = record['calories'];
+        print('🧾 User: $userId | Date: $date | Calories: $calories');
+      }
+    }
+  }
+
+  Future<void> fetchAndCalculateCalories() async {
+    final calculator = CalorieCalculator(userId: widget.userId);
+    final totalCalories = await calculator.fetchAndCalculateAndUpload(); // trả về giá trị kcal tổng
+    print('đang test');
+    setState(() {
+      _totalCalories = totalCalories;
+    });
+  }
+
 
   Future<void> fetchArticles() async {
     final response = await http.get(Uri.parse(
@@ -108,12 +141,15 @@ class _HomeContentState extends State<HomeContent> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Các thẻ sức khỏe
            HealthCard(title: "🏃 Di chuyển", value: "40264 m", onTap: () => _navigateToActivityScreen(context)),
            HealthCard(title: "⏱ Thời gian", value: "3 giờ",onTap: () => _navigateToActivityScreen(context),),
-           HealthCard(title: "🔥 Kcal đốt cháy", value: "250 kcal",onTap: () => _navigateToActivityScreen(context),),
-// chạy bộ
-            Center(
+           // HealthCard(title: "🔥 Kcal đốt cháy", value: "250 kcal",onTap: () => _navigateToActivityScreen(context),),
+            HealthCard(
+              title: "🔥 Kcal đốt cháy",
+              value: "${_totalCalories.toStringAsFixed(0)} kcal",
+              onTap: () => _navigateToActivityScreen(context),
+            ),
+          Center(
               child: Padding(
                 padding: const EdgeInsets.symmetric(vertical: 16.0),
                 child: ElevatedButton.icon(
