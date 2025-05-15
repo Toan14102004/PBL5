@@ -1,6 +1,7 @@
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
+import 'package:intl/intl.dart';
 import '../services/calorie_calculator.dart';
 import '../widgets/custom_app_bar.dart';
 import '../widgets/health_card.dart';
@@ -67,50 +68,43 @@ class _HomeContentState extends State<HomeContent> {
   bool _isLoading = true;
   int visibleCount = 5;
   double _totalCalories = 0.0;
+  int _totalMovingTime = 0; // đơn vị: giây
+
 
   @override
   void initState() {
     super.initState();
     fetchArticles();
-    printAllCaloriesData();
     fetchAndCalculateCalories();
-  }
-
-  Future<void> printAllCaloriesData() async {
-    final dbRef = FirebaseDatabase.instance.ref("daily_calories");
-    final snapshot = await dbRef.get();
-
-    if (!snapshot.exists) {
-      print('⚠️ Không có dữ liệu trong nút daily_calories.');
-      return;
-    }
-
-    final data = Map<String, dynamic>.from(snapshot.value as Map);
-
-    print('📋 Dữ liệu trong daily_calories:');
-    for (final userEntry in data.entries) {
-      final userId = userEntry.key;
-      final dailyRecords = Map<String, dynamic>.from(userEntry.value);
-
-      for (final dayEntry in dailyRecords.entries) {
-        final date = dayEntry.key;
-        final record = Map<String, dynamic>.from(dayEntry.value);
-
-        final calories = record['calories'];
-        print('🧾 User: $userId | Date: $date | Calories: $calories');
-      }
-    }
   }
 
   Future<void> fetchAndCalculateCalories() async {
     final calculator = CalorieCalculator(userId: widget.userId);
-    final totalCalories = await calculator.fetchAndCalculateAndUpload(); // trả về giá trị kcal tổng
-    print('đang test');
+    final totalCalories = await calculator.fetchAndCalculateAndUpload();
+
     setState(() {
       _totalCalories = totalCalories;
     });
+
+  }
+  Future<void> fetchAndCalculateMovingTime() async {
+    final calculator = CalorieCalculator(userId: widget.userId);
+    final totalMovingTimeSeconds = await calculator.calculateAndUploadTotalMovingTime();
+
+    setState(() {
+      _totalMovingTime = totalMovingTimeSeconds;
+    });
   }
 
+  String formatDuration(int totalSeconds) {
+    final hours = totalSeconds ~/ 3600;
+    final minutes = (totalSeconds % 3600) ~/ 60;
+    final seconds = totalSeconds % 60;
+
+    return "${hours.toString().padLeft(2, '0')}:"
+        "${minutes.toString().padLeft(2, '0')}:"
+        "${seconds.toString().padLeft(2, '0')}";
+  }
 
   Future<void> fetchArticles() async {
     final response = await http.get(Uri.parse(
@@ -141,14 +135,17 @@ class _HomeContentState extends State<HomeContent> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-           HealthCard(title: "🏃 Di chuyển", value: "40264 m", onTap: () => _navigateToActivityScreen(context)),
-           HealthCard(title: "⏱ Thời gian", value: "3 giờ",onTap: () => _navigateToActivityScreen(context),),
-           // HealthCard(title: "🔥 Kcal đốt cháy", value: "250 kcal",onTap: () => _navigateToActivityScreen(context),),
+            HealthCard(title: "🏃 Di chuyển", value: "40264 m", onTap: () => _navigateToActivityScreen(context)),
             HealthCard(
-              title: "🔥 Kcal đốt cháy",
-              value: "${_totalCalories.toStringAsFixed(0)} kcal",
+              title: "⏱ Thời gian",
+              value: formatDuration(_totalMovingTime),
               onTap: () => _navigateToActivityScreen(context),
             ),
+            HealthCard(
+                title: "🔥 Kcal đốt cháy",
+                value: "${_totalCalories.toStringAsFixed(2)} kcal",
+                onTap: () => _navigateToActivityScreen(context),
+              ),
           Center(
               child: Padding(
                 padding: const EdgeInsets.symmetric(vertical: 16.0),
