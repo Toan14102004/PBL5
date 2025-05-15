@@ -8,6 +8,7 @@ import '../widgets/health_card.dart';
 import '../models/article.dart';
 import '../models/Record.dart';
 import '../widgets/bottom_nav_bar.dart';
+import '../widgets/pie_chart_screen.dart';
 import 'fitness_screen.dart';
 import 'ProfileScreen.dart';
 import 'Notification_screen.dart';
@@ -76,6 +77,7 @@ class _HomeContentState extends State<HomeContent> {
     super.initState();
     fetchArticles();
     fetchAndCalculateCalories();
+    fetchAndCalculateMovingTime();
   }
 
   Future<void> fetchAndCalculateCalories() async {
@@ -187,7 +189,7 @@ class _HomeContentState extends State<HomeContent> {
                 flex: 3,
                 child: SizedBox(
                   height: 350,
-                  child: PieChartWidget(),
+                  child:PieChartScreen(userId: widget.userId),
                 ),
               ),
               Expanded(
@@ -198,12 +200,13 @@ class _HomeContentState extends State<HomeContent> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       _buildLegend("🏃 Chạy bộ", Colors.blue),
-                      _buildLegend("🚴 Đạp xe", Colors.red),
+                      _buildLegend("🚴 Đạp xe", Colors.yellow),
                       _buildLegend("🚶 Đi bộ", Colors.green),
                       _buildLegend("🧘 Ngồi", Colors.orange),
                       _buildLegend("🛌 Nằm", Colors.pink),
                       _buildLegend("🐥 Đứng", Colors.purple),
                       _buildLegend("🧘 Leo cầu thang", Colors.brown),
+                      _buildLegend("⚠️ Ngã", Colors.red),
                     ],
                   ),
                 ),
@@ -305,125 +308,6 @@ class _HomeContentState extends State<HomeContent> {
             ),
           );
         },
-      ),
-    );
-  }
-}
-
-// Biểu đồ hình tròn
-class PieChartWidget extends StatelessWidget {
-
-  List<Record> sampleRecords = [
-    Record(
-      startTime: "2025-04-13T07:00:00",
-      endTime: "2025-04-13T07:00:10",
-      dayActiveId: "d1",
-      activityType: "Chạy bộ", // 30 phút
-    ),
-    Record(
-
-      startTime: "2025-04-13T08:00:00",
-      endTime: "2025-04-13T08:40:00",
-      dayActiveId: "d1",
-      activityType: "Đạp xe", // 40 phút
-    ),
-    Record(
-
-      startTime: "2025-04-13T09:00:00",
-      endTime: "2025-04-13T09:20:00",
-      dayActiveId: "d1",
-      activityType: "Đi bộ", // 20 phút
-    ),
-    Record(
-
-      startTime: "2025-04-13T10:00:00",
-      endTime: "2025-04-13T10:50:00",
-      dayActiveId: "d1",
-      activityType: "Ngồi", // 50 phút
-    ),
-    Record(
-
-      startTime: "2025-04-13T11:00:00",
-      endTime: "2025-04-13T11:45:00",
-      dayActiveId: "d1",
-      activityType: "Nằm", // 45 phút
-    ),
-    Record(
-
-      startTime: "2025-04-13T12:00:00",
-      endTime: "2025-04-13T12:10:00",
-      dayActiveId: "d1",
-      activityType: "Đứng", // 10 phút
-    ),
-  ];
-
-
-  List<PieChartSectionData> createChartSectionsFromRecords(List<Record> records) {
-    Map<String, Duration> activityDurations = {};
-
-    for (var record in records) {
-      DateTime start = DateTime.parse(record.startTime);
-      DateTime end = DateTime.parse(record.endTime);
-
-      if (end.isAfter(start)) {
-        Duration duration = end.difference(start);
-        activityDurations[record.activityType] =
-            (activityDurations[record.activityType] ?? Duration()) + duration;
-      }
-    }
-
-    Duration totalDuration = activityDurations.values.fold(
-      Duration(),
-          (sum, dur) => sum + dur,
-    );
-
-    if (totalDuration.inSeconds == 0) return [];
-
-    Map<String, Color> colorMap = {
-      "Chạy bộ": Colors.blue,
-      "Đạp xe": Colors.red,
-      "Đi bộ": Colors.green,
-      "Ngồi": Colors.orange,
-      "Nằm": Colors.pink,
-      "Đứng": Colors.purple,
-      "Leo cầu thang": Colors.brown,
-    };
-
-    List<PieChartSectionData> sections = [];
-
-    activityDurations.forEach((activity, duration) {
-      double percent = duration.inSeconds / totalDuration.inSeconds * 100;
-      sections.add(PieChartSectionData(
-        color: colorMap[activity] ?? Colors.grey,
-        value: percent,
-        title: "${percent.toStringAsFixed(0)}%",
-        radius: 60,
-        titleStyle: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
-      ));
-    });
-
-    return sections;
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    List<PieChartSectionData> sections = createChartSectionsFromRecords(sampleRecords);
-
-    if (sections.isEmpty) {
-      return Center(
-        child: Text(
-          'Dữ liệu đang được cập nhật\nXin bạn chờ trong giây lát...',
-          style: TextStyle(fontSize: 16, color: Colors.grey),
-          textAlign: TextAlign.center,
-        ),
-      );
-    }
-
-    return PieChart(
-      PieChartData(
-        sections: sections,
-        centerSpaceRadius: 40,
-        sectionsSpace: 2,
       ),
     );
   }

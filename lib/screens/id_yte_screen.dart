@@ -128,7 +128,7 @@ class _IdYteScreenState extends State<IdYteScreen> {
             const SizedBox(height: 40),
 
             Row(
-              mainAxisAlignment: MainAxisAlignment.end, // Căn chỉnh nút => phải
+              mainAxisAlignment: MainAxisAlignment.end,
               children: [
                 ElevatedButton(
                   onPressed: () {
