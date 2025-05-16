@@ -3,15 +3,32 @@ import 'package:intl/intl.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import 'package:fl_chart/fl_chart.dart';
 
+import '../services/calorie_calculator.dart';
+import '../services/home_service.dart';
+import '../widgets/ListCard.dart';
+
 class ActivityScreen extends StatefulWidget {
-  const ActivityScreen({super.key});
+  final String userId;
+
+  const ActivityScreen({Key? key, required this.userId}) : super(key: key);
 
   @override
   State<ActivityScreen> createState() => _ActivityScreenState();
 }
 
 class _ActivityScreenState extends State<ActivityScreen> {
+
   String formattedDate = '';
+  double _totalCalories = 0.0;
+  int _totalMovingTime = 0;
+  int cout_fall = 0;
+  String time = "16/05/2025";
+  DateTime _selectedDate = DateTime.now(); // ngày được chọn
+
+  // Format ngày dạng "dd/MM/yyyy"
+  String get selectedFormattedDate {
+    return DateFormat('dd/MM/yyyy').format(_selectedDate);
+  }
 
   @override
   void initState() {
@@ -22,7 +39,47 @@ class _ActivityScreenState extends State<ActivityScreen> {
         formattedDate = DateFormat("EEEE, dd MMMM, yyyy", "vi_VN").format(now);
       });
     });
+    fetchAndCalculateCalories_activityScreen(selectedFormattedDate);
+    fetchAndCalculateMovingTime_activityScreen(selectedFormattedDate);
+    fetchCoutFallOfDay(selectedFormattedDate);
   }
+  Future<void> fetchAndCalculateCalories_activityScreen(String day) async {
+    final calculator = ActivitiScreenService(userId: widget.userId);
+    final totalCalories = await calculator.fetchAndCalculateAndUpload(day);
+
+    setState(() {
+      _totalCalories = totalCalories;
+    });
+
+  }
+  Future<void> fetchAndCalculateMovingTime_activityScreen(String day) async {
+    final calculator = ActivitiScreenService(userId: widget.userId);
+    final totalMovingTimeSeconds = await calculator.calculateAndUploadTotalMovingTime(day);
+    setState(() {
+      _totalMovingTime = totalMovingTimeSeconds;
+
+    });
+  }
+
+  Future<void> fetchCoutFallOfDay(String day) async {
+    final service = ActivitiScreenService(userId: widget.userId);
+    final count = await service.fetchFallActivity(day);
+    print("Số lần ngã trong ngày: $count");
+    setState(() {
+      cout_fall = count;
+    });
+  }
+
+  String formatDuration(int totalSeconds) {
+    final hours = totalSeconds ~/ 3600;
+    final minutes = (totalSeconds % 3600) ~/ 60;
+    final seconds = totalSeconds % 60;
+
+    return "${hours.toString().padLeft(2, '0')}:"
+        "${minutes.toString().padLeft(2, '0')}:"
+        "${seconds.toString().padLeft(2, '0')}";
+  }
+
 
   @override
   Widget build(BuildContext context) {
@@ -31,15 +88,30 @@ class _ActivityScreenState extends State<ActivityScreen> {
       appBar: AppBar(
         backgroundColor: Colors.black,
         elevation: 0,
-        iconTheme: const IconThemeData(color: Colors.white), // <-- Đổi màu icon back thành trắng
+        iconTheme: const IconThemeData(color: Colors.white),
         title: Text(
-          formattedDate.isNotEmpty ? "Hôm nay, $formattedDate" : "Đang tải...",
-          style: const TextStyle(color: Colors.white, fontSize: 18),
+          "Ngày $selectedFormattedDate",
+          style: const TextStyle(color: Colors.greenAccent, fontSize: 18, fontWeight: FontWeight.bold),
         ),
         actions: [
           IconButton(
             icon: const Icon(Icons.calendar_today, color: Colors.greenAccent),
-            onPressed: () {},
+            onPressed: () async {
+              DateTime? pickedDate = await showDatePicker(
+                context: context,
+                initialDate: _selectedDate,
+                firstDate: DateTime(2000),
+                lastDate: DateTime(2100),
+              );
+
+              if (pickedDate != null) {
+                setState(() {
+                  _selectedDate = pickedDate;
+                });
+                // Gọi hàm lấy số lần ngã với ngày mới chọn
+                await fetchCoutFallOfDay(selectedFormattedDate);
+              }
+            },
           ),
           IconButton(
             icon: const Icon(Icons.share, color: Colors.greenAccent),
@@ -47,7 +119,6 @@ class _ActivityScreenState extends State<ActivityScreen> {
           ),
         ],
       ),
-
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: ListView(
@@ -57,9 +128,12 @@ class _ActivityScreenState extends State<ActivityScreen> {
             _buildActivityPieChart(),
             const SizedBox(height: 20),
             const Text("Hoạt động hôm nay",
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white)),
+                style: TextStyle(fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white)),
             const SizedBox(height: 10),
-            _buildActivityList(),
+            ListCard(),
+
           ],
         ),
       ),
@@ -83,22 +157,23 @@ class _ActivityScreenState extends State<ActivityScreen> {
           padding: const EdgeInsets.symmetric(vertical: 24.0, horizontal: 20),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceAround,
-            children: const [
+            children: [
               _StatItem(
                 label: "KCAL",
-                value: "357",
+                value: "${_totalCalories.toStringAsFixed(2)} kcal",
                 color: Colors.orange,
                 icon: Icons.local_fire_department,
               ),
               _StatItem(
                 label: "Phút",
-                value: "47",
+                // value: "47",
+                value: formatDuration(_totalMovingTime),
                 color: Colors.greenAccent,
                 icon: Icons.timer,
               ),
               _StatItem(
                 label: "Té",
-                value: "1",
+                value: "${cout_fall.toStringAsFixed(0)} lần",
                 color: Colors.redAccent,
                 icon: Icons.warning_amber_rounded,
               ),
@@ -120,7 +195,9 @@ class _ActivityScreenState extends State<ActivityScreen> {
         child: Column(
           children: [
             const Text("Tỉ lệ hoạt động",
-                style: TextStyle(fontSize: 16, color: Colors.white, fontWeight: FontWeight.bold)),
+                style: TextStyle(fontSize: 16,
+                    color: Colors.white,
+                    fontWeight: FontWeight.bold)),
             const SizedBox(height: 12),
             SizedBox(
               height: 220,
@@ -143,11 +220,16 @@ class _ActivityScreenState extends State<ActivityScreen> {
 
   List<PieChartSectionData> _generateSections() {
     return [
-      PieChartSectionData(value: 40, title: '', color: Colors.blueAccent, radius: 50),
-      PieChartSectionData(value: 30, title: '', color: Colors.greenAccent, radius: 50),
-      PieChartSectionData(value: 10, title: '', color: Colors.amber, radius: 50),
-      PieChartSectionData(value: 5, title: '', color: Colors.redAccent, radius: 50),
-      PieChartSectionData(value: 15, title: '', color: Colors.purpleAccent, radius: 50),
+      PieChartSectionData(
+          value: 40, title: '', color: Colors.blueAccent, radius: 50),
+      PieChartSectionData(
+          value: 30, title: '', color: Colors.greenAccent, radius: 50),
+      PieChartSectionData(
+          value: 10, title: '', color: Colors.amber, radius: 50),
+      PieChartSectionData(
+          value: 5, title: '', color: Colors.redAccent, radius: 50),
+      PieChartSectionData(
+          value: 15, title: '', color: Colors.purpleAccent, radius: 50),
     ];
   }
 
@@ -163,43 +245,44 @@ class _ActivityScreenState extends State<ActivityScreen> {
       spacing: 20,
       children: items
           .map(
-            (item) => Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(Icons.circle, size: 10, color: item["color"] as Color),
-            const SizedBox(width: 6),
-            Text(item["label"] as String, style: const TextStyle(color: Colors.white70)),
-          ],
-        ),
+            (item) =>
+            Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(Icons.circle, size: 10, color: item["color"] as Color),
+                const SizedBox(width: 6),
+                Text(item["label"] as String,
+                    style: const TextStyle(color: Colors.white70)),
+              ],
+            ),
       )
           .toList(),
     );
   }
 
-  Widget _buildActivityList() {
-    final mockActivities = [
-      {"time": "07:00 - 07:30", "type": "Đi bộ", "color": Colors.blueAccent},
-      {"time": "08:00 - 08:45", "type": "Ngồi", "color": Colors.greenAccent},
-      {"time": "09:00 - 09:05", "type": "Té ngã", "color": Colors.redAccent},
-      {"time": "10:00 - 10:10", "type": "Đứng", "color": Colors.amber},
-    ];
+  final mockActivities = [
+    {
+      "time": "07:00 - 07:30",
+      "type": "Đi bộ",
+      "color": Colors.blueAccent,
+      "timestamp": DateTime.now().subtract(Duration(minutes: 3)),
+    },
+    {
+      "time": "08:00 - 08:45",
+      "type": "Ngồi",
+      "color": Colors.greenAccent,
+      "timestamp": DateTime.now().subtract(Duration(minutes: 10)),
+    },
+    {
+      "time": "09:00 - 09:05",
+      "type": "Té ngã",
+      "color": Colors.redAccent,
+      "timestamp": DateTime.now().subtract(Duration(minutes: 20)),
+    },
+    // Các activity khác...
+  ];
 
-    return Column(
-      children: mockActivities.map((activity) {
-        return Card(
-          color: Colors.grey.shade800,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-          elevation: 3,
-          child: ListTile(
-            leading: Icon(Icons.access_time, color: activity["color"] as Color),
-            title: Text(activity["type"] as String,
-                style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w500)),
-            subtitle: Text(activity["time"] as String, style: const TextStyle(color: Colors.grey)),
-          ),
-        );
-      }).toList(),
-    );
-  }
+
 }
 
 class _StatItem extends StatelessWidget {
@@ -208,7 +291,7 @@ class _StatItem extends StatelessWidget {
   final Color color;
   final IconData icon;
 
-  const _StatItem({
+   _StatItem({
     required this.label,
     required this.value,
     required this.color,

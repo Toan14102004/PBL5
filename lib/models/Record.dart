@@ -45,3 +45,11 @@ class Record {
     }
   }
 }
+// 1 : Đi bộ
+// 2 : Ngồi
+// 3 : Đứng
+// 4 : Nằm
+// 5 : Chạy bộ
+// 6 : Đi cầu thang
+// 7 : Đạp xe
+// 8 : Ngã

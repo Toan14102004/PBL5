@@ -277,7 +277,7 @@ class _HomeContentState extends State<HomeContent> {
   void _navigateToActivityScreen(BuildContext context) {
     Navigator.push(
       context,
-      MaterialPageRoute(builder: (context) => const ActivityScreen()),
+      MaterialPageRoute(builder: (context) =>  ActivityScreen(userId: widget.userId)),
     );
   }
 

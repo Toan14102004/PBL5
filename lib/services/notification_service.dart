@@ -1,11 +1,3 @@
-// 1 : Đi bộ
-// 2 : Ngồi
-// 3 : Đứng
-// 4 : Nằm
-// 5 : Chạy bộ
-// 6 : Đi cầu thang
-// 7 : Đạp xe
-// 8 : Ngã
 import 'package:firebase_database/firebase_database.dart';
 import 'package:intl/intl.dart';
 import '../models/activity_notification.dart';
