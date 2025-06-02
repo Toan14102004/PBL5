@@ -39,34 +39,23 @@ class _ActivityScreenState extends State<ActivityScreen> {
         formattedDate = DateFormat("EEEE, dd MMMM, yyyy", "vi_VN").format(now);
       });
     });
-    fetchAndCalculateCalories_activityScreen(selectedFormattedDate);
-    fetchAndCalculateMovingTime_activityScreen(selectedFormattedDate);
     fetchCoutFallOfDay(selectedFormattedDate);
   }
-  Future<void> fetchAndCalculateCalories_activityScreen(String day) async {
-    final calculator = ActivitiScreenService(userId: widget.userId);
-    final totalCalories = await calculator.fetchAndCalculateAndUpload(day);
 
-    setState(() {
-      _totalCalories = totalCalories;
-    });
-
-  }
-  Future<void> fetchAndCalculateMovingTime_activityScreen(String day) async {
-    final calculator = ActivitiScreenService(userId: widget.userId);
-    final totalMovingTimeSeconds = await calculator.calculateAndUploadTotalMovingTime(day);
-    setState(() {
-      _totalMovingTime = totalMovingTimeSeconds;
-
-    });
-  }
 
   Future<void> fetchCoutFallOfDay(String day) async {
     final service = ActivitiScreenService(userId: widget.userId);
     final count = await service.fetchFallActivity(day);
-    print("Số lần ngã trong ngày: $count");
+    final totalMovingTimeSeconds = await service.calculateAndUploadTotalMovingTime(day);
+    final totalCalories = await service.fetchAndCalculateAndUpload(day);
+    print("Số lần ngã trong ngày (act_sc) $selectedFormattedDate : $count");
+    print("Kcal ngày (act_sc) $selectedFormattedDate : $count");
+    print("Số lần ngã trong ngày (act_sc) $selectedFormattedDate : $count");
     setState(() {
       cout_fall = count;
+      _totalMovingTime = totalMovingTimeSeconds;
+      _totalCalories = totalCalories;
+
     });
   }
 

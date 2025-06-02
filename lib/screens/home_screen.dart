@@ -1,12 +1,9 @@
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
-import 'package:fl_chart/fl_chart.dart';
-import 'package:intl/intl.dart';
 import '../services/calorie_calculator.dart';
 import '../widgets/custom_app_bar.dart';
 import '../widgets/health_card.dart';
 import '../models/article.dart';
-import '../models/Record.dart';
 import '../widgets/bottom_nav_bar.dart';
 import '../widgets/pie_chart_screen.dart';
 import 'fitness_screen.dart';
@@ -78,23 +75,25 @@ class _HomeContentState extends State<HomeContent> {
     fetchArticles();
     fetchAndCalculateCalories();
     fetchAndCalculateMovingTime();
-  }
 
+  }
   Future<void> fetchAndCalculateCalories() async {
     final calculator = CalorieCalculator(userId: widget.userId);
-    final totalCalories = await calculator.fetchAndCalculateAndUpload();
-
-    setState(() {
-      _totalCalories = totalCalories;
+    calculator.listenToRealtime((RealtimeResult result) {
+      setState(() {
+        _totalCalories = result.calories;
+      });
+      print('🔥 Kcal: ${result.calories.toStringAsFixed(2)}');
     });
-
   }
+
   Future<void> fetchAndCalculateMovingTime() async {
     final calculator = CalorieCalculator(userId: widget.userId);
-    final totalMovingTimeSeconds = await calculator.calculateAndUploadTotalMovingTime();
-
-    setState(() {
-      _totalMovingTime = totalMovingTimeSeconds;
+    calculator.listenToRealtime((RealtimeResult result) {
+      setState(() {
+        _totalMovingTime = result.movingTimeSeconds;
+      });
+      print('⏱️ Di chuyển: ${result.movingTimeSeconds} giây');
     });
   }
 
@@ -137,7 +136,7 @@ class _HomeContentState extends State<HomeContent> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-            HealthCard(title: "🏃 Di chuyển", value: "40264 m", onTap: () => _navigateToActivityScreen(context)),
+            HealthCard(title: "🏃 Di chuyển", value: "0 m", onTap: () => _navigateToActivityScreen(context)),
             HealthCard(
               title: "⏱ Thời gian",
               value: formatDuration(_totalMovingTime),

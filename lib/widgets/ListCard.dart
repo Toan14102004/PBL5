@@ -149,7 +149,8 @@ class _ListCardState extends State<ListCard> {
           }
         } else {
           // Không có dữ liệu → xám nhạt
-          bgColor = Colors.grey.shade200;
+          // bgColor = Colors.grey.shade200;
+          bgColor = Colors.blue.shade100;
           borderColor = Colors.transparent;
           statusColor = Colors.black54;
         }
