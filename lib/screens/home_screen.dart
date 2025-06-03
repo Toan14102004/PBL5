@@ -1,6 +1,7 @@
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
 import '../services/calorie_calculator.dart';
+import '../services/notification_local.dart';
 import '../widgets/custom_app_bar.dart';
 import '../widgets/health_card.dart';
 import '../models/article.dart';
@@ -72,9 +73,11 @@ class _HomeContentState extends State<HomeContent> {
   @override
   void initState() {
     super.initState();
+    NotificationLocalService.requestPermission();
     fetchArticles();
     fetchAndCalculateCalories();
     fetchAndCalculateMovingTime();
+    NotificationLocalService.getDeviceToken();
 
   }
   Future<void> fetchAndCalculateCalories() async {

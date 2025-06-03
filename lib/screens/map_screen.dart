@@ -12,12 +12,17 @@ class MapScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return BlocProvider(create: (_) => PositionBloc(), child: const MapView());
+    return BlocProvider(
+      create: (_) => PositionBloc()..add(UpdatePosition(initialPosition)),
+      child: MapView(initialPosition: initialPosition),
+    );
   }
 }
 
+
 class MapView extends StatefulWidget {
-  const MapView({super.key});
+  final LatLng initialPosition;
+  const MapView({super.key, required this.initialPosition});
 
   @override
   State<MapView> createState() => _MapViewState();
@@ -25,6 +30,13 @@ class MapView extends StatefulWidget {
 
 class _MapViewState extends State<MapView> {
   final Completer<GoogleMapController> _controller = Completer();
+
+  @override
+  void initState() {
+    super.initState();
+    // Đẩy sự kiện cập nhật vị trí khi khởi tạo màn hình
+    context.read<PositionBloc>().add(UpdatePosition(widget.initialPosition));
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -40,12 +52,10 @@ class _MapViewState extends State<MapView> {
           },
         ),
       ),
-      // back button
       extendBodyBehindAppBar: true,
       extendBody: true,
       body: BlocListener<PositionBloc, PositionState>(
-        listenWhen:
-            (previous, current) =>
+        listenWhen: (previous, current) =>
         previous.currentView != current.currentView &&
             current.status == Status.isSuccess,
         listener: (context, state) {
@@ -53,38 +63,36 @@ class _MapViewState extends State<MapView> {
         },
         child: BlocBuilder<PositionBloc, PositionState>(
           builder: (_, positionState) {
-        if (positionState.status == Status.isLoading ||
-        positionState.status == Status.initial) {
-        return const Center(child: CircularProgressIndicator());
-        } else {
-        if (positionState.status == Status.isSuccess) {
-        LatLng currentView =
-        context.watch<PositionBloc>().state.currentView;
-
-        return GoogleMap(
-        onMapCreated: (controller) {
-        _controller.complete(controller);
-        },
-        initialCameraPosition: CameraPosition(
-        target: currentView,
-        zoom: 19,
-        ),
-        myLocationEnabled: true,
-        markers: {
-        Marker(
-        markerId: const MarkerId('currentLocation'),
-        position: currentView,
-        icon: BitmapDescriptor.defaultMarkerWithHue(
-        BitmapDescriptor.hueBlue,
-        ),
-        ),
-        },
-        );
-        } else {
-        return Center(child: Text(positionState.errorMessage));
-        }
-        }
-        },
+            if (positionState.status == Status.isLoading ||
+                positionState.status == Status.initial) {
+              return const Center(child: CircularProgressIndicator());
+            } else {
+              if (positionState.status == Status.isSuccess) {
+                LatLng currentView = positionState.currentView;
+                return GoogleMap(
+                  onMapCreated: (controller) {
+                    _controller.complete(controller);
+                  },
+                  initialCameraPosition: CameraPosition(
+                    target: currentView,
+                    zoom: 19,
+                  ),
+                  myLocationEnabled: true,
+                  markers: {
+                    Marker(
+                      markerId: const MarkerId('currentLocation'),
+                      position: currentView,
+                      icon: BitmapDescriptor.defaultMarkerWithHue(
+                        BitmapDescriptor.hueBlue,
+                      ),
+                    ),
+                  },
+                );
+              } else {
+                return Center(child: Text(positionState.errorMessage));
+              }
+            }
+          },
         ),
       ),
     );
