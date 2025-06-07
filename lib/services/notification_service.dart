@@ -158,7 +158,6 @@ class NotificationService {
   Stream<List<ActivityNotification>> listenToLocations(String userId) {
     final ref = FirebaseDatabase.instance.ref("location");
     log("Listening to locations...");
-
     return ref.onValue.map((event) {
       final snapshot = event.snapshot;
       log("Location data changed (services): ${snapshot.value}");
@@ -190,12 +189,6 @@ class NotificationService {
           );
 
           notifications.add(notification);
-          // Gửi thông báo đẩy
-          // NotificationLocalService.show(
-          //   notification.title,
-          //   notification.content,
-          //   payload: 'fall:$lat:$long',
-          // );
           NotificationLocalService.show(
             "🚨 Cảnh báo té ngã!",
             "Phát hiện một cú ngã vào $date lúc ${DateFormat.Hm().format(groupStart)}. Nhấn để xem vị trí.",

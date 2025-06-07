@@ -164,19 +164,4 @@ class _NotificationScreenState extends State<NotificationScreen> {
       ),
     );
   }
-
-  // void _checkForAlerts(SensorData data) {
-  //   try {
-  //     if (data.fire) {
-  //       log('🔥 Fire detected: ${data.fire}');
-  //       NotificationLocalService.show('🔥 Fire Alert', 'Fire has been detected!');
-  //     } else if (data.gas) {
-  //       log('💨 Gas leak detected');
-  //       NotificationLocalService.show('💨 Gas Leak', 'Gas leak detected!');
-  //     }
-  //   } catch (e, stack) {
-  //     log('Lỗi khi kiểm tra cảnh báo: $e', stackTrace: stack);
-  //   }
-  // }
-
 }
