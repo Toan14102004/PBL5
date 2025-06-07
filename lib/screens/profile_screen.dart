@@ -36,25 +36,18 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   void _loadUserProfile() async {
     final user = await ProfileService.getUserProfile(widget.userId);
-    if (user != null) {
-      setState(() {
-        _user = user;
-        _nicknameController.text = user.nickname;
-        _heightController.text = user.height.toString();
-        _weightController.text = user.weight.toString();
-        _selectedGender = user.gender;
-        _selectedBirthDate = user.birthDate;
-        _selectedActivityLevel = user.activityLevel;
-        imageUrl = user.avatarUrl;
-        _isLoading = false;
-      });
-    } else {
-      setState(() {
-        _isLoading = false;
-      });
-    }
+    setState(() {
+      _user = user;
+      _nicknameController.text = user.nickname;
+      _heightController.text = user.height.toString();
+      _weightController.text = user.weight.toString();
+      _selectedGender = user.gender;
+      _selectedBirthDate = user.birthDate;
+      _selectedActivityLevel = user.activityLevel;
+      imageUrl = user.avatarUrl;
+      _isLoading = false;
+    });
   }
-
 
   Future<void> _saveProfile() async {
     if (_formKey.currentState!.validate()) {
@@ -80,7 +73,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
       Future.delayed(const Duration(seconds: 2), () {
         Navigator.pushReplacement(
           context,
-          MaterialPageRoute(builder: (context) => HomeScreen(userId: 'user_1029357990')),
+          MaterialPageRoute(
+            builder: (context) => HomeScreen(userId: 'user_1029357990'),
+          ),
         );
       });
     }
@@ -95,13 +90,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
     }
   }
 
-
   @override
   Widget build(BuildContext context) {
     if (_isLoading) {
-      return const Scaffold(
-        body: Center(child: CircularProgressIndicator()),
-      );
+      return const Scaffold(body: Center(child: CircularProgressIndicator()));
     }
     return Scaffold(
       appBar: AppBar(title: const Text("Hồ sơ cá nhân")),
@@ -117,11 +109,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   children: [
                     CircleAvatar(
                       radius: 50,
-                      backgroundImage: _image != null
-                          ? FileImage(_image!)
-                          : (imageUrl.startsWith("http")
-                          ? NetworkImage(imageUrl)
-                          : AssetImage(imageUrl) as ImageProvider),
+                      backgroundImage:
+                          _image != null
+                              ? FileImage(_image!)
+                              : (imageUrl.startsWith("http")
+                                  ? NetworkImage(imageUrl)
+                                  : AssetImage(imageUrl) as ImageProvider),
                     ),
                     Positioned(
                       right: 0,
@@ -155,13 +148,16 @@ class _ProfileScreenState extends State<ProfileScreen> {
               _buildInfoBirthDay("Ngày sinh"),
               const SizedBox(height: 20),
               Padding(
-                padding: const EdgeInsets.symmetric(vertical: 15, horizontal: 10),
+                padding: const EdgeInsets.symmetric(
+                  vertical: 15,
+                  horizontal: 10,
+                ),
                 child: const Text(
                   "Giới tính, chiều cao, cân nặng và ngày sinh được dùng để tính "
-                      "các giá trị như lượng calo tiêu thụ, lượng calo nạp tối ưu và "
-                      "phạm vi nhịp tim trong khi tập thể dục. Bạn không phải cung cấp "
-                      "thông tin này, nhưng nếu cung cấp thì bạn sẽ nhận được các đề "
-                      "xuất sức khỏe chính xác hơn.",
+                  "các giá trị như lượng calo tiêu thụ, lượng calo nạp tối ưu và "
+                  "phạm vi nhịp tim trong khi tập thể dục. Bạn không phải cung cấp "
+                  "thông tin này, nhưng nếu cung cấp thì bạn sẽ nhận được các đề "
+                  "xuất sức khỏe chính xác hơn.",
                   style: TextStyle(fontSize: 16, color: Colors.grey),
                 ),
               ),
@@ -172,7 +168,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
               const SizedBox(height: 10),
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceAround,
-                children: List.generate(3, (index) => _buildActivityLevel(index + 1)),
+                children: List.generate(
+                  3,
+                  (index) => _buildActivityLevel(index + 1),
+                ),
               ),
               const SizedBox(height: 30),
               Center(
@@ -198,16 +197,20 @@ class _ProfileScreenState extends State<ProfileScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(title, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+          Text(
+            title,
+            style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+          ),
           const SizedBox(height: 5),
           DropdownButtonFormField<String>(
             value: _selectedGender,
-            items: ["Nam", "Nữ", "Khác"].map((String value) {
-              return DropdownMenuItem<String>(
-                value: value,
-                child: Text(value),
-              );
-            }).toList(),
+            items:
+                ["Nam", "Nữ", "Khác"].map((String value) {
+                  return DropdownMenuItem<String>(
+                    value: value,
+                    child: Text(value),
+                  );
+                }).toList(),
             onChanged: (String? newValue) {
               setState(() {
                 _selectedGender = newValue!;
@@ -231,7 +234,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(title, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+          Text(
+            title,
+            style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+          ),
           const SizedBox(height: 5),
           TextFormField(
             controller: controller,
@@ -265,7 +271,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(title, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+          Text(
+            title,
+            style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+          ),
           const SizedBox(height: 5),
           InkWell(
             onTap: () async {
@@ -277,7 +286,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
               );
               if (pickedDate != null) {
                 setState(() {
-                  _selectedBirthDate = "${pickedDate.day}/${pickedDate.month}/${pickedDate.year}";
+                  _selectedBirthDate =
+                      "${pickedDate.day}/${pickedDate.month}/${pickedDate.year}";
                 });
               }
             },
@@ -291,10 +301,16 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Text(
-                    _selectedBirthDate.isNotEmpty ? _selectedBirthDate : "Chọn ngày sinh",
+                    _selectedBirthDate.isNotEmpty
+                        ? _selectedBirthDate
+                        : "Chọn ngày sinh",
                     style: const TextStyle(fontSize: 16, color: Colors.black),
                   ),
-                  const Icon(Icons.calendar_today, size: 18, color: Colors.grey),
+                  const Icon(
+                    Icons.calendar_today,
+                    size: 18,
+                    color: Colors.grey,
+                  ),
                 ],
               ),
             ),
@@ -309,8 +325,18 @@ class _ProfileScreenState extends State<ProfileScreen> {
       onTap: () => setState(() => _selectedActivityLevel = level),
       child: Column(
         children: [
-          Icon(Icons.directions_walk, size: 40, color: _selectedActivityLevel == level ? Colors.green : Colors.grey),
-          Text("Mức $level", style: TextStyle(color: _selectedActivityLevel == level ? Colors.blue : Colors.black)),
+          Icon(
+            Icons.directions_walk,
+            size: 40,
+            color: _selectedActivityLevel == level ? Colors.green : Colors.grey,
+          ),
+          Text(
+            "Mức $level",
+            style: TextStyle(
+              color:
+                  _selectedActivityLevel == level ? Colors.blue : Colors.black,
+            ),
+          ),
         ],
       ),
     );

@@ -5,7 +5,7 @@ import 'package:intl/intl.dart';
 class FitnessChart extends StatelessWidget {
   final List<Map<String, dynamic>> last7Days;
 
-  const FitnessChart({Key? key, required this.last7Days}) : super(key: key);
+  const FitnessChart({super.key, required this.last7Days});
 
   @override
   Widget build(BuildContext context) {
@@ -31,9 +31,13 @@ class FitnessChart extends StatelessWidget {
                   if (value == 0) {
                     return const Padding(
                       padding: EdgeInsets.only(right: 8),
-                      child: Text('0 kcal',
-                          style: TextStyle(
-                              fontSize: 12, fontWeight: FontWeight.bold)),
+                      child: Text(
+                        '0 kcal',
+                        style: TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
                     );
                   }
                   return Padding(
@@ -51,7 +55,9 @@ class FitnessChart extends StatelessWidget {
                 showTitles: true,
                 getTitlesWidget: (value, meta) {
                   int index = value.toInt();
-                  if (index < 0 || index >= last7Days.length) return const SizedBox();
+                  if (index < 0 || index >= last7Days.length) {
+                    return const SizedBox();
+                  }
                   String date = last7Days[index]['date'];
                   final parsed = DateTime.parse(date);
                   final formatted = DateFormat('dd/MM').format(parsed);

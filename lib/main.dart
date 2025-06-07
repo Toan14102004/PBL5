@@ -26,6 +26,8 @@
 //   }
 // }
 //
+import 'dart:developer';
+
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
@@ -34,7 +36,7 @@ import 'screens/home_screen.dart';
 
 Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
   await Firebase.initializeApp();
-  print('🔕 [Background] Received a message: ${message.messageId}');
+  log('🔕 [Background] Received a message: ${message.messageId}');
 }
 
 final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
@@ -45,25 +47,22 @@ void main() async {
   await NotificationLocalService.requestPermission();
   FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
   FirebaseMessaging.onMessage.listen((RemoteMessage message) {
-    print('📩 [Foreground] Message received!');
+    log('📩 [Foreground] Message received!');
     NotificationLocalService.show(
       message.notification?.title ?? '',
       message.notification?.body ?? '',
     );
-    print('Data: ${message.data}');
-    print('Title: ${message.notification?.title}');
-    print('Body: ${message.notification?.body}');
+    log('Data: ${message.data}');
+    log('Title: ${message.notification?.title}');
+    log('Body: ${message.notification?.body}');
   });
   // App ở background, user click noti để mở app
   FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage message) {
-    print('👆 [onMessageOpenedApp] Notification clicked!');
-    print('Data: ${message.data}');
+    log('👆 [onMessageOpenedApp] Notification clicked!');
+    log('Data: ${message.data}');
   });
   // runApp(const MyApp());
-  runApp(MaterialApp(
-    navigatorKey: navigatorKey,
-    home: MyApp(),
-  ));
+  runApp(MaterialApp(navigatorKey: navigatorKey, home: MyApp()));
 }
 
 class MyApp extends StatelessWidget {
@@ -74,9 +73,7 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       title: 'Health App',
-      theme: ThemeData(
-        primarySwatch: Colors.blue,
-      ),
+      theme: ThemeData(primarySwatch: Colors.blue),
       home: const StartScreen(),
     );
   }

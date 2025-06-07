@@ -1,4 +1,5 @@
-import 'package:firebase_database/firebase_database.dart';
+import 'dart:developer';
+
 import 'package:flutter/material.dart';
 import '../services/calorie_calculator.dart';
 import '../services/notification_local.dart';
@@ -8,8 +9,8 @@ import '../models/article.dart';
 import '../widgets/bottom_nav_bar.dart';
 import '../widgets/pie_chart_screen.dart';
 import 'fitness_screen.dart';
-import 'ProfileScreen.dart';
-import 'Notification_screen.dart';
+import 'profile_screen.dart';
+import 'notification_screen.dart';
 import 'activity_screen.dart';
 import 'article_detail_screen.dart';
 import 'running_screen.dart';
@@ -18,7 +19,7 @@ import 'package:http/http.dart' as http;
 
 class HomeScreen extends StatefulWidget {
   final String userId;
-  const HomeScreen({Key? key, required this.userId}) : super(key: key);
+  const HomeScreen({super.key, required this.userId});
   // const HomeScreen({super.key});
 
   @override
@@ -35,7 +36,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final List<Widget> _screens = [
+    final List<Widget> screens = [
       HomeContent(userId: widget.userId),
       FitnessScreen(),
       ProfileScreen(userId: widget.userId),
@@ -44,7 +45,7 @@ class _HomeScreenState extends State<HomeScreen> {
     return Scaffold(
       backgroundColor: Color(0xFFF5F5F5),
       appBar: const CustomAppBar(),
-      body: _screens[_selectedIndex],
+      body: screens[_selectedIndex],
       bottomNavigationBar: BottomNavBar(
         currentIndex: _selectedIndex,
         onTap: _onItemTapped,
@@ -56,7 +57,7 @@ class _HomeScreenState extends State<HomeScreen> {
 class HomeContent extends StatefulWidget {
   final String userId;
 
-  const HomeContent({Key? key, required this.userId}) : super(key: key);
+  const HomeContent({super.key, required this.userId});
 
   @override
   State<HomeContent> createState() => _HomeContentState();
@@ -69,7 +70,6 @@ class _HomeContentState extends State<HomeContent> {
   double _totalCalories = 0.0;
   int _totalMovingTime = 0; // đơn vị: giây
 
-
   @override
   void initState() {
     super.initState();
@@ -78,15 +78,15 @@ class _HomeContentState extends State<HomeContent> {
     fetchAndCalculateCalories();
     fetchAndCalculateMovingTime();
     NotificationLocalService.getDeviceToken();
-
   }
+
   Future<void> fetchAndCalculateCalories() async {
     final calculator = CalorieCalculator(userId: widget.userId);
     calculator.listenToRealtime((RealtimeResult result) {
       setState(() {
         _totalCalories = result.calories;
       });
-      print('🔥 Kcal: ${result.calories.toStringAsFixed(2)}');
+      log('🔥 Kcal: ${result.calories.toStringAsFixed(2)}');
     });
   }
 
@@ -96,7 +96,7 @@ class _HomeContentState extends State<HomeContent> {
       setState(() {
         _totalMovingTime = result.movingTimeSeconds;
       });
-      print('⏱️ Di chuyển: ${result.movingTimeSeconds} giây');
+      log('⏱️ Di chuyển: ${result.movingTimeSeconds} giây');
     });
   }
 
@@ -111,69 +111,79 @@ class _HomeContentState extends State<HomeContent> {
   }
 
   Future<void> fetchArticles() async {
-    final response = await http.get(Uri.parse(
-      'https://newsapi.org/v2/top-headlines?country=us&category=health&apiKey=439e9cb051f84ad68e694370e90eeeb3',
-    ));
+    final response = await http.get(
+      Uri.parse(
+        'https://newsapi.org/v2/top-headlines?country=us&category=health&apiKey=439e9cb051f84ad68e694370e90eeeb3',
+      ),
+    );
 
     if (response.statusCode == 200) {
       final Map<String, dynamic> jsonData = json.decode(response.body);
       final List<dynamic> articlesJson = jsonData['articles'];
 
       setState(() {
-        _articles = articlesJson
-            .map((jsonItem) => Article.fromJson(jsonItem))
-            .where((a) => a.imageUrl.isNotEmpty)
-            .toList();
+        _articles =
+            articlesJson
+                .map((jsonItem) => Article.fromJson(jsonItem))
+                .where((a) => a.imageUrl.isNotEmpty)
+                .toList();
         _isLoading = false;
       });
     } else {
-      print("Lỗi khi gọi API: ${response.statusCode}");
+      log("Lỗi khi gọi API: ${response.statusCode}");
       setState(() {
         _isLoading = false;
       });
     }
   }
+
   @override
   Widget build(BuildContext context) {
     return SingleChildScrollView(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-            HealthCard(title: "🏃 Di chuyển", value: "0 m", onTap: () => _navigateToActivityScreen(context)),
-            HealthCard(
-              title: "⏱ Thời gian",
-              value: formatDuration(_totalMovingTime),
-              onTap: () => _navigateToActivityScreen(context),
-            ),
-            HealthCard(
-                title: "🔥 Kcal đốt cháy",
-                value: "${_totalCalories.toStringAsFixed(2)} kcal",
-                onTap: () => _navigateToActivityScreen(context),
-              ),
+          HealthCard(
+            title: "🏃 Di chuyển",
+            value: "0 m",
+            onTap: () => _navigateToActivityScreen(context),
+          ),
+          HealthCard(
+            title: "⏱ Thời gian",
+            value: formatDuration(_totalMovingTime),
+            onTap: () => _navigateToActivityScreen(context),
+          ),
+          HealthCard(
+            title: "🔥 Kcal đốt cháy",
+            value: "${_totalCalories.toStringAsFixed(2)} kcal",
+            onTap: () => _navigateToActivityScreen(context),
+          ),
           Center(
-              child: Padding(
-                padding: const EdgeInsets.symmetric(vertical: 16.0),
-                child: ElevatedButton.icon(
-                  onPressed: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(builder: (context) => const RunningScreen()),
-                    );
-                  },
-                  icon: Icon(Icons.directions_run),
-                  label: Text("Bắt đầu chạy bộ"),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.blue,
-                    foregroundColor: Colors.white,
-                    padding: EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-                    textStyle: TextStyle(fontSize: 16),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(vertical: 16.0),
+              child: ElevatedButton.icon(
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const RunningScreen(),
                     ),
+                  );
+                },
+                icon: Icon(Icons.directions_run),
+                label: Text("Bắt đầu chạy bộ"),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.blue,
+                  foregroundColor: Colors.white,
+                  padding: EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                  textStyle: TextStyle(fontSize: 16),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
                   ),
                 ),
               ),
             ),
+          ),
 
           // Biểu đồ hình tròn
           Padding(
@@ -191,7 +201,7 @@ class _HomeContentState extends State<HomeContent> {
                 flex: 3,
                 child: SizedBox(
                   height: 350,
-                  child:PieChartScreen(userId: widget.userId),
+                  child: PieChartScreen(userId: widget.userId),
                 ),
               ),
               Expanded(
@@ -241,7 +251,10 @@ class _HomeContentState extends State<HomeContent> {
           ListView.builder(
             shrinkWrap: true,
             physics: NeverScrollableScrollPhysics(),
-            itemCount: visibleCount < _articles.length ? visibleCount : _articles.length,
+            itemCount:
+                visibleCount < _articles.length
+                    ? visibleCount
+                    : _articles.length,
             itemBuilder: (context, index) {
               return _buildArticleItem(_articles[index]);
             },
@@ -279,7 +292,9 @@ class _HomeContentState extends State<HomeContent> {
   void _navigateToActivityScreen(BuildContext context) {
     Navigator.push(
       context,
-      MaterialPageRoute(builder: (context) =>  ActivityScreen(userId: widget.userId)),
+      MaterialPageRoute(
+        builder: (context) => ActivityScreen(userId: widget.userId),
+      ),
     );
   }
 
@@ -297,11 +312,19 @@ class _HomeContentState extends State<HomeContent> {
             width: 80,
             height: 80,
             fit: BoxFit.cover,
-            errorBuilder: (context, error, stackTrace) => Icon(Icons.broken_image),
+            errorBuilder:
+                (context, error, stackTrace) => Icon(Icons.broken_image),
           ),
         ),
-        title: Text(article.title, style: TextStyle(fontWeight: FontWeight.bold)),
-        subtitle: Text(article.description, maxLines: 2, overflow: TextOverflow.ellipsis),
+        title: Text(
+          article.title,
+          style: TextStyle(fontWeight: FontWeight.bold),
+        ),
+        subtitle: Text(
+          article.description,
+          maxLines: 2,
+          overflow: TextOverflow.ellipsis,
+        ),
         onTap: () {
           Navigator.push(
             context,

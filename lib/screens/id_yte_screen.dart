@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 class IdYteScreen extends StatefulWidget {
-  const IdYteScreen({Key? key}) : super(key: key);
+  const IdYteScreen({super.key});
 
   @override
   State<IdYteScreen> createState() => _IdYteScreenState();

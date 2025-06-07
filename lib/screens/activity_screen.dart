@@ -1,27 +1,27 @@
+import 'dart:developer';
+
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import 'package:fl_chart/fl_chart.dart';
 
-import '../services/calorie_calculator.dart';
 import '../services/home_service.dart';
-import '../widgets/ListCard.dart';
+import '../widgets/list_card.dart';
 
 class ActivityScreen extends StatefulWidget {
   final String userId;
 
-  const ActivityScreen({Key? key, required this.userId}) : super(key: key);
+  const ActivityScreen({super.key, required this.userId});
 
   @override
   State<ActivityScreen> createState() => _ActivityScreenState();
 }
 
 class _ActivityScreenState extends State<ActivityScreen> {
-
   String formattedDate = '';
   double _totalCalories = 0.0;
   int _totalMovingTime = 0;
-  int cout_fall = 0;
+  int countFall = 0;
   String time = "16/05/2025";
   DateTime _selectedDate = DateTime.now(); // ngày được chọn
 
@@ -42,20 +42,19 @@ class _ActivityScreenState extends State<ActivityScreen> {
     fetchCoutFallOfDay(selectedFormattedDate);
   }
 
-
   Future<void> fetchCoutFallOfDay(String day) async {
     final service = ActivitiScreenService(userId: widget.userId);
     final count = await service.fetchFallActivity(day);
-    final totalMovingTimeSeconds = await service.calculateAndUploadTotalMovingTime(day);
+    final totalMovingTimeSeconds = await service
+        .calculateAndUploadTotalMovingTime(day);
     final totalCalories = await service.fetchAndCalculateAndUpload(day);
-    print("Số lần ngã trong ngày (act_sc) $selectedFormattedDate : $count");
-    print("Kcal ngày (act_sc) $selectedFormattedDate : $count");
-    print("Số lần ngã trong ngày (act_sc) $selectedFormattedDate : $count");
+    log("Số lần ngã trong ngày (act_sc) $selectedFormattedDate : $count");
+    log("Kcal ngày (act_sc) $selectedFormattedDate : $count");
+    log("Số lần ngã trong ngày (act_sc) $selectedFormattedDate : $count");
     setState(() {
-      cout_fall = count;
+      countFall = count;
       _totalMovingTime = totalMovingTimeSeconds;
       _totalCalories = totalCalories;
-
     });
   }
 
@@ -69,7 +68,6 @@ class _ActivityScreenState extends State<ActivityScreen> {
         "${seconds.toString().padLeft(2, '0')}";
   }
 
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -80,7 +78,11 @@ class _ActivityScreenState extends State<ActivityScreen> {
         iconTheme: const IconThemeData(color: Colors.white),
         title: Text(
           "Ngày $selectedFormattedDate",
-          style: const TextStyle(color: Colors.greenAccent, fontSize: 18, fontWeight: FontWeight.bold),
+          style: const TextStyle(
+            color: Colors.greenAccent,
+            fontSize: 18,
+            fontWeight: FontWeight.bold,
+          ),
         ),
         actions: [
           IconButton(
@@ -116,13 +118,16 @@ class _ActivityScreenState extends State<ActivityScreen> {
             const SizedBox(height: 20),
             _buildActivityPieChart(),
             const SizedBox(height: 20),
-            const Text("Hoạt động hôm nay",
-                style: TextStyle(fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.white)),
+            const Text(
+              "Hoạt động hôm nay",
+              style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+                color: Colors.white,
+              ),
+            ),
             const SizedBox(height: 10),
             ListCard(),
-
           ],
         ),
       ),
@@ -162,7 +167,7 @@ class _ActivityScreenState extends State<ActivityScreen> {
               ),
               _StatItem(
                 label: "Té",
-                value: "${cout_fall.toStringAsFixed(0)} lần",
+                value: "${countFall.toStringAsFixed(0)} lần",
                 color: Colors.redAccent,
                 icon: Icons.warning_amber_rounded,
               ),
@@ -173,7 +178,6 @@ class _ActivityScreenState extends State<ActivityScreen> {
     );
   }
 
-
   Widget _buildActivityPieChart() {
     return Card(
       elevation: 4,
@@ -183,10 +187,14 @@ class _ActivityScreenState extends State<ActivityScreen> {
         padding: const EdgeInsets.all(16.0),
         child: Column(
           children: [
-            const Text("Tỉ lệ hoạt động",
-                style: TextStyle(fontSize: 16,
-                    color: Colors.white,
-                    fontWeight: FontWeight.bold)),
+            const Text(
+              "Tỉ lệ hoạt động",
+              style: TextStyle(
+                fontSize: 16,
+                color: Colors.white,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
             const SizedBox(height: 12),
             SizedBox(
               height: 220,
@@ -210,15 +218,35 @@ class _ActivityScreenState extends State<ActivityScreen> {
   List<PieChartSectionData> _generateSections() {
     return [
       PieChartSectionData(
-          value: 40, title: '', color: Colors.blueAccent, radius: 50),
+        value: 40,
+        title: '',
+        color: Colors.blueAccent,
+        radius: 50,
+      ),
       PieChartSectionData(
-          value: 30, title: '', color: Colors.greenAccent, radius: 50),
+        value: 30,
+        title: '',
+        color: Colors.greenAccent,
+        radius: 50,
+      ),
       PieChartSectionData(
-          value: 10, title: '', color: Colors.amber, radius: 50),
+        value: 10,
+        title: '',
+        color: Colors.amber,
+        radius: 50,
+      ),
       PieChartSectionData(
-          value: 5, title: '', color: Colors.redAccent, radius: 50),
+        value: 5,
+        title: '',
+        color: Colors.redAccent,
+        radius: 50,
+      ),
       PieChartSectionData(
-          value: 15, title: '', color: Colors.purpleAccent, radius: 50),
+        value: 15,
+        title: '',
+        color: Colors.purpleAccent,
+        radius: 50,
+      ),
     ];
   }
 
@@ -232,20 +260,22 @@ class _ActivityScreenState extends State<ActivityScreen> {
     ];
     return Wrap(
       spacing: 20,
-      children: items
-          .map(
-            (item) =>
-            Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Icon(Icons.circle, size: 10, color: item["color"] as Color),
-                const SizedBox(width: 6),
-                Text(item["label"] as String,
-                    style: const TextStyle(color: Colors.white70)),
-              ],
-            ),
-      )
-          .toList(),
+      children:
+          items
+              .map(
+                (item) => Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(Icons.circle, size: 10, color: item["color"] as Color),
+                    const SizedBox(width: 6),
+                    Text(
+                      item["label"] as String,
+                      style: const TextStyle(color: Colors.white70),
+                    ),
+                  ],
+                ),
+              )
+              .toList(),
     );
   }
 
@@ -270,8 +300,6 @@ class _ActivityScreenState extends State<ActivityScreen> {
     },
     // Các activity khác...
   ];
-
-
 }
 
 class _StatItem extends StatelessWidget {
@@ -280,7 +308,7 @@ class _StatItem extends StatelessWidget {
   final Color color;
   final IconData icon;
 
-   _StatItem({
+  const _StatItem({
     required this.label,
     required this.value,
     required this.color,
@@ -293,13 +321,20 @@ class _StatItem extends StatelessWidget {
       children: [
         Icon(icon, size: 32, color: color),
         const SizedBox(height: 6),
-        Text(value,
-            style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: color)),
+        Text(
+          value,
+          style: TextStyle(
+            fontSize: 22,
+            fontWeight: FontWeight.bold,
+            color: color,
+          ),
+        ),
         const SizedBox(height: 4),
-        Text(label.toUpperCase(),
-            style: const TextStyle(color: Colors.white70, fontSize: 12)),
+        Text(
+          label.toUpperCase(),
+          style: const TextStyle(color: Colors.white70, fontSize: 12),
+        ),
       ],
     );
   }
 }
-

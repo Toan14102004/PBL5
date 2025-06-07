@@ -5,13 +5,12 @@ import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:intl/intl.dart';
 import 'package:rxdart/rxdart.dart';
 import '../models/activity_notification.dart';
-import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+// import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 
 import 'notification_local.dart';
 
 class NotificationService {
-
-  static final _notifications = FlutterLocalNotificationsPlugin();
+  // static final _notifications = FlutterLocalNotificationsPlugin();
 
   Stream<List<ActivityNotification>> listenToActivities(String userId) {
     final ref = FirebaseDatabase.instance.ref("activity_records");
@@ -34,7 +33,7 @@ class NotificationService {
         final recordList = List<Map<dynamic, dynamic>>.from(record['records']);
 
         recordList.sort(
-              (a, b) => DateTime.parse(
+          (a, b) => DateTime.parse(
             a['start_time'],
           ).compareTo(DateTime.parse(b['start_time'])),
         );
@@ -58,7 +57,7 @@ class NotificationService {
               notification = ActivityNotification(
                 title: "🚶 Bạn đã đi bộ",
                 content:
-                "Từ ${DateFormat.Hm().format(groupStart!)} đến ${DateFormat.Hm().format(groupEnd!)} vào $date. Tiếp tục vận động nhé!",
+                    "Từ ${DateFormat.Hm().format(groupStart!)} đến ${DateFormat.Hm().format(groupEnd!)} vào $date. Tiếp tục vận động nhé!",
                 timestamp: groupStart!,
               );
               break;
@@ -67,7 +66,7 @@ class NotificationService {
                 notification = ActivityNotification(
                   title: '⏳ Ngồi quá lâu!',
                   content:
-                  'Bạn đã ngồi liên tục ${duration ~/ 60} giờ vào $date. Hãy đứng dậy và vận động nhẹ nhé!',
+                      'Bạn đã ngồi liên tục ${duration ~/ 60} giờ vào $date. Hãy đứng dậy và vận động nhẹ nhé!',
                   timestamp: groupStart!,
                 );
               }
@@ -77,7 +76,7 @@ class NotificationService {
                 notification = ActivityNotification(
                   title: "🧍 Bạn đã đứng khá lâu",
                   content:
-                  "Bạn đã đứng khoảng $duration phút vào $date. Hãy nghỉ ngơi nếu thấy mỏi nhé!",
+                      "Bạn đã đứng khoảng $duration phút vào $date. Hãy nghỉ ngơi nếu thấy mỏi nhé!",
                   timestamp: groupStart!,
                 );
               }
@@ -87,7 +86,7 @@ class NotificationService {
                 notification = ActivityNotification(
                   title: "🛏️ Nghỉ ngơi hợp lý",
                   content:
-                  "Bạn đã nằm nghỉ $duration phút vào $date. Hãy tiếp tục chăm sóc sức khỏe của mình!",
+                      "Bạn đã nằm nghỉ $duration phút vào $date. Hãy tiếp tục chăm sóc sức khỏe của mình!",
                   timestamp: groupStart!,
                 );
               }
@@ -96,7 +95,7 @@ class NotificationService {
               notification = ActivityNotification(
                 title: "🏃 Tuyệt vời! Bạn đã chạy bộ",
                 content:
-                "Chạy từ ${DateFormat.Hm().format(groupStart!)} đến ${DateFormat.Hm().format(groupEnd!)} vào $date. Giữ vững phong độ nhé!",
+                    "Chạy từ ${DateFormat.Hm().format(groupStart!)} đến ${DateFormat.Hm().format(groupEnd!)} vào $date. Giữ vững phong độ nhé!",
                 timestamp: groupStart!,
               );
               break;
@@ -104,7 +103,7 @@ class NotificationService {
               notification = ActivityNotification(
                 title: "🧗 Bạn thật chăm chỉ!",
                 content:
-                "Bạn đã leo cầu thang vào $date lúc ${DateFormat.Hm().format(groupStart!)}. Đây là bài tập tuyệt vời cho sức khỏe!",
+                    "Bạn đã leo cầu thang vào $date lúc ${DateFormat.Hm().format(groupStart!)}. Đây là bài tập tuyệt vời cho sức khỏe!",
                 timestamp: groupStart!,
               );
               break;
@@ -112,7 +111,7 @@ class NotificationService {
               notification = ActivityNotification(
                 title: "🚴 Bạn đã đạp xe",
                 content:
-                "Từ ${DateFormat.Hm().format(groupStart!)} đến ${DateFormat.Hm().format(groupEnd!)} vào $date. Cố gắng duy trì nhé!",
+                    "Từ ${DateFormat.Hm().format(groupStart!)} đến ${DateFormat.Hm().format(groupEnd!)} vào $date. Cố gắng duy trì nhé!",
                 timestamp: groupStart!,
               );
               break;
@@ -183,7 +182,7 @@ class NotificationService {
           notification = ActivityNotification(
             title: "🚨 Cảnh báo té ngã!",
             content:
-            "Phát hiện một cú ngã vào $date lúc ${DateFormat.Hm().format(groupStart)}. Hãy kiểm tra vị trí!",
+                "Phát hiện một cú ngã vào $date lúc ${DateFormat.Hm().format(groupStart)}. Hãy kiểm tra vị trí!",
             timestamp: groupStart,
             data: LatLng(lat, long),
           );
@@ -194,7 +193,6 @@ class NotificationService {
             "Phát hiện một cú ngã vào $date lúc ${DateFormat.Hm().format(groupStart)}. Nhấn để xem vị trí.",
             payload: "fall:$lat:$long",
           );
-
         }
 
         handleGroup();
@@ -210,9 +208,9 @@ class NotificationService {
     final locationStream = listenToLocations(userId);
 
     return Rx.combineLatest2<
-        List<ActivityNotification>,
-        List<ActivityNotification>,
-        List<ActivityNotification>
+      List<ActivityNotification>,
+      List<ActivityNotification>,
+      List<ActivityNotification>
     >(activityStream, locationStream, (activityNoti, locationNoti) {
       final all = [...activityNoti, ...locationNoti];
       all.sort((a, b) => b.timestamp.compareTo(a.timestamp));

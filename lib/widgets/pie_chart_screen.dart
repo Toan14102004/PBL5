@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:intl/intl.dart';
-import '../models/Record.dart';
+import '../models/record.dart';
 
 class PieChartScreen extends StatelessWidget {
   final String userId;

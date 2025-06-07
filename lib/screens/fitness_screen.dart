@@ -1,7 +1,8 @@
+import 'dart:developer';
+
 import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:intl/intl.dart';
-import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_database/firebase_database.dart';
 import '../widgets/fitness_chart.dart';
 import 'id_yte_screen.dart';
@@ -25,6 +26,7 @@ class _FitnessScreenState extends State<FitnessScreen> {
     super.initState();
     fetchData();
   }
+
   Future<void> fetchData() async {
     final now = DateTime.now();
     final database = FirebaseDatabase.instance.ref();
@@ -34,13 +36,16 @@ class _FitnessScreenState extends State<FitnessScreen> {
 
     for (int i = 6; i >= 0; i--) {
       final date = now.subtract(Duration(days: i));
-      final day = date.day.toString().padLeft(2, '0');    // vd: "15"
+      final day = date.day.toString().padLeft(2, '0'); // vd: "15"
       final month = date.month.toString().padLeft(2, '0'); // vd: "05"
-      final year = date.year.toString();                   // vd: "2025"
+      final year = date.year.toString(); // vd: "2025"
       final dateStr = DateFormat('yyyy-MM-dd').format(date);
 
       // Lấy calories theo cấu trúc ngày/tháng/năm
-      final caloriesSnap = await database.child('daily_calories/$userId/$day/$month/$year').get();
+      final caloriesSnap =
+          await database
+              .child('daily_calories/$userId/$day/$month/$year')
+              .get();
       int kcal = 0;
       // int? kcal;
 
@@ -49,26 +54,35 @@ class _FitnessScreenState extends State<FitnessScreen> {
         // Dữ liệu calories có thể là số thực, mình làm tròn về int
         final calValue = data['calories'];
         if (calValue != null) {
-          kcal = (calValue is num) ? calValue.round() : int.tryParse(calValue.toString()) ?? 0;
+          kcal =
+              (calValue is num)
+                  ? calValue.round()
+                  : int.tryParse(calValue.toString()) ?? 0;
         }
-        print('Calories on $dateStr: $kcal');
+        log('Calories on $dateStr: $kcal');
       } else {
-        print('No calories data on $dateStr');
+        log('No calories data on $dateStr');
       }
       tempCalories.add({'date': dateStr, 'kcal': kcal});
 
       // Lấy thời gian di chuyển theo cấu trúc ngày/tháng/năm
-      final moveSnap = await database.child('daily_movement/$userId/$day/$month/$year').get();
+      final moveSnap =
+          await database
+              .child('daily_movement/$userId/$day/$month/$year')
+              .get();
       int seconds = 0;
       if (moveSnap.exists) {
         final data = moveSnap.value as Map<dynamic, dynamic>;
         final moveValue = data['total_moving_time_seconds'];
         if (moveValue != null) {
-          seconds = (moveValue is num) ? moveValue.round() : int.tryParse(moveValue.toString()) ?? 0;
+          seconds =
+              (moveValue is num)
+                  ? moveValue.round()
+                  : int.tryParse(moveValue.toString()) ?? 0;
         }
-        print('Movement seconds on $dateStr: $seconds');
+        log('Movement seconds on $dateStr: $seconds');
       } else {
-        print('No movement data on $dateStr');
+        log('No movement data on $dateStr');
       }
       tempMovement.add({'date': dateStr, 'seconds': seconds});
     }
@@ -79,7 +93,8 @@ class _FitnessScreenState extends State<FitnessScreen> {
       loading = false;
     });
   }
-  Widget _OperatingEnergy(String title, String value) {
+
+  Widget operatingEnergy(String title, String value) {
     return Container(
       padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 16),
       margin: const EdgeInsets.only(top: 10),
@@ -98,20 +113,18 @@ class _FitnessScreenState extends State<FitnessScreen> {
           TextField(
             controller: TextEditingController(
               text:
-              'Trong 7 ngày qua bạn đã đốt cháy trung bình $value kilocalo một ngày.',
+                  'Trong 7 ngày qua bạn đã đốt cháy trung bình $value kilocalo một ngày.',
             ),
             readOnly: true,
             maxLines: null,
-            decoration: const InputDecoration(
-              border: OutlineInputBorder(),
-            ),
+            decoration: const InputDecoration(border: OutlineInputBorder()),
           ),
         ],
       ),
     );
   }
 
-  Widget _AverageTimeOfExercise(String title, String value){
+  Widget averageTimeOfExercise(String title, String value) {
     return Container(
       padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 16),
       margin: const EdgeInsets.only(top: 10),
@@ -130,13 +143,11 @@ class _FitnessScreenState extends State<FitnessScreen> {
           TextField(
             controller: TextEditingController(
               text:
-              'Bạn đã nhận được trung bình $value phút thể dục 1 ngày trong 7 ngày qua.',
+                  'Bạn đã nhận được trung bình $value phút thể dục 1 ngày trong 7 ngày qua.',
             ),
             readOnly: true,
             maxLines: null,
-            decoration: const InputDecoration(
-              border: OutlineInputBorder(),
-            ),
+            decoration: const InputDecoration(border: OutlineInputBorder()),
           ),
         ],
       ),
@@ -147,7 +158,7 @@ class _FitnessScreenState extends State<FitnessScreen> {
   Widget _buildTimeChart() {
     final List<DateTime> last7Days = List.generate(
       7,
-          (i) => DateTime.now().subtract(Duration(days: 6 - i)),
+      (i) => DateTime.now().subtract(Duration(days: 6 - i)),
     );
 
     double maxY = 20;
@@ -198,7 +209,9 @@ class _FitnessScreenState extends State<FitnessScreen> {
                 showTitles: true,
                 getTitlesWidget: (value, meta) {
                   if (value < 0 || value >= 7) return const SizedBox();
-                  final label = DateFormat('dd/MM').format(last7Days[value.toInt()]);
+                  final label = DateFormat(
+                    'dd/MM',
+                  ).format(last7Days[value.toInt()]);
                   return Padding(
                     padding: const EdgeInsets.only(top: 8.0),
                     child: Text(label, style: const TextStyle(fontSize: 12)),
@@ -220,8 +233,6 @@ class _FitnessScreenState extends State<FitnessScreen> {
       ),
     );
   }
-
-
 
   Widget _buildUpdateHealthIdCard(BuildContext context) {
     return Card(
@@ -262,9 +273,7 @@ class _FitnessScreenState extends State<FitnessScreen> {
   @override
   Widget build(BuildContext context) {
     if (loading) {
-      return const Scaffold(
-        body: Center(child: CircularProgressIndicator()),
-      );
+      return const Scaffold(body: Center(child: CircularProgressIndicator()));
     }
     return Scaffold(
       appBar: AppBar(
@@ -277,8 +286,10 @@ class _FitnessScreenState extends State<FitnessScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              _OperatingEnergy("🔥 𝓝𝓪̆𝓷𝓰 𝓵𝓾̛𝓸̛̣𝓷𝓰 𝓱𝓸𝓪̣𝓽 𝓭𝓸̣̂𝓷𝓰",
-                  _calculateAverageCalories(caloriesData).toString()),
+              operatingEnergy(
+                "🔥 𝓝𝓪̆𝓷𝓰 𝓵𝓾̛𝓸̛̣𝓷𝓰 𝓱𝓸𝓪̣𝓽 𝓭𝓸̣̂𝓷𝓰",
+                _calculateAverageCalories(caloriesData).toString(),
+              ),
               const SizedBox(height: 30),
               const Text(
                 "Biểu đồ hoạt động tuần qua",
@@ -288,8 +299,10 @@ class _FitnessScreenState extends State<FitnessScreen> {
               FitnessChart(last7Days: caloriesData),
 
               const SizedBox(height: 35),
-              _AverageTimeOfExercise("⏰  𝓢𝓸̂́ 𝓹𝓱𝓾́𝓽 𝓽𝓱𝓮̂̉ 𝓭𝓾̣𝓬",
-                  (_calculateAverageMovement(movementData) ~/ 60).toString()),
+              averageTimeOfExercise(
+                "⏰  𝓢𝓸̂́ 𝓹𝓱𝓾́𝓽 𝓽𝓱𝓮̂̉ 𝓭𝓾̣𝓬",
+                (_calculateAverageMovement(movementData) ~/ 60).toString(),
+              ),
               const SizedBox(height: 30),
               const Text(
                 "Biểu đồ thời gian hoạt động tuần qua",
@@ -318,5 +331,4 @@ class _FitnessScreenState extends State<FitnessScreen> {
     final total = data.fold(0, (sum, item) => sum + (item['seconds'] as int));
     return (total / data.length).round();
   }
-
 }

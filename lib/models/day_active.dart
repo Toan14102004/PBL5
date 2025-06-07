@@ -1,4 +1,4 @@
-import '../models/Record.dart';
+import 'record.dart';
 
 class DayActive {
   String id;
@@ -18,9 +18,10 @@ class DayActive {
       id: map['id'] ?? '',
       userId: map['user_id'] ?? '',
       date: map['date'] ?? '',
-      records: (map['records'] as List)
-          .map((record) => Record.fromMap(record))
-          .toList(),
+      records:
+          (map['records'] as List)
+              .map((record) => Record.fromMap(record))
+              .toList(),
     );
   }
 

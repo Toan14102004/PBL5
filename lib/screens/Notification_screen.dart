@@ -1,9 +1,6 @@
-import 'dart:developer';
-
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:health_app_ui/screens/map_screen.dart';
-import '../services/notification_local.dart';
 import '../services/notification_service.dart';
 import '../models/activity_notification.dart';
 

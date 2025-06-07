@@ -1,11 +1,11 @@
+import 'dart:developer';
+
 import 'package:firebase_database/firebase_database.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/cupertino.dart';
-import 'package:image_picker/image_picker.dart';
 import 'dart:io';
 import '../models/user.dart';
 import 'package:path/path.dart';
-
 
 class ProfileService {
   static final FirebaseDatabase _database = FirebaseDatabase.instance;
@@ -18,16 +18,17 @@ class ProfileService {
       var data = snapshot.value;
 
       if (data is Map) {
-        print("🔥 Dữ liệu từ Firebase (user/$userId): $data");
+        log("🔥 Dữ liệu từ Firebase (user/$userId): $data");
 
         return User(
           id: userId,
           nickname: data['nickname'] ?? '',
           height: (data['height']?.toDouble() ?? 0.0),
           weight: (data['weight']?.toDouble() ?? 0.0),
-          gender: data['gender'] is bool
-              ? (data['gender'] ? 'Nam' : 'Nữ')
-              : (data['gender'] ?? 'Nam'),
+          gender:
+              data['gender'] is bool
+                  ? (data['gender'] ? 'Nam' : 'Nữ')
+                  : (data['gender'] ?? 'Nam'),
           birthDate: data['birthDate'] ?? '',
           activityLevel: data['activityLevel'] ?? 1,
           avatarUrl: data['avatar'] ?? "assets/default_avatar.png",
@@ -56,7 +57,7 @@ class ProfileService {
         'avatarUrl': avatarUrl,
       });
     } catch (e) {
-      print("Error saving user data: $e");
+      log("Error saving user data: $e");
     }
   }
 
@@ -80,9 +81,8 @@ class ProfileService {
 
       return downloadUrl; // Trả về URL của hình ảnh đã tải lên
     } catch (e) {
-      print("Error uploading image: $e");
+      log("Error uploading image: $e");
       return ''; // Trả về null nếu có lỗi
     }
   }
-
 }

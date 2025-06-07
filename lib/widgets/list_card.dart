@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:flutter/material.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:intl/intl.dart';
@@ -34,7 +36,7 @@ class _ListCardState extends State<ListCard> {
     try {
       final dbRef = FirebaseDatabase.instance.ref();
       final snapshot = await dbRef.get();
-      print("Snapshot value: ${snapshot.value}");
+      log("Snapshot value: ${snapshot.value}");
 
       if (snapshot.exists) {
         // Mỗi activityType giữ record có end_time lớn nhất
@@ -47,7 +49,9 @@ class _ListCardState extends State<ListCard> {
             activityRecords.forEach((key, value) {
               if (value is Map && value["records"] is List) {
                 for (var r in value["records"]) {
-                  if (r is Map && r["end_time"] != null && r["activityType"] != null) {
+                  if (r is Map &&
+                      r["end_time"] != null &&
+                      r["activityType"] != null) {
                     try {
                       DateTime endTime = DateTime.parse(r["end_time"]);
                       int activityType = r["activityType"];
@@ -58,7 +62,7 @@ class _ListCardState extends State<ListCard> {
                         tempLatestEndTimes[activityType] = endTime;
                       }
                     } catch (e) {
-                      print("Lỗi khi parse end_time: $e");
+                      log("Lỗi khi parse end_time: $e");
                     }
                   }
                 }
@@ -72,23 +76,24 @@ class _ListCardState extends State<ListCard> {
           latestEndTimes.addAll(tempLatestEndTimes);
         });
 
-        print("Latest end times by activity: $latestEndTimes");
+        log("Latest end times by activity: $latestEndTimes");
       } else {
-        print("Snapshot không tồn tại");
+        log("Snapshot không tồn tại");
       }
     } catch (e) {
-      print("Lỗi khi fetch activity: $e");
+      log("Lỗi khi fetch activity: $e");
     }
   }
 
   String getStatusLabel(int activityType) {
     if (latestEndTimes.containsKey(activityType)) {
-      final formattedTime = DateFormat('dd/MM/yyyy HH:mm:ss').format(latestEndTimes[activityType]!);
+      final formattedTime = DateFormat(
+        'dd/MM/yyyy HH:mm:ss',
+      ).format(latestEndTimes[activityType]!);
       return "Kết thúc lúc: $formattedTime";
     }
     return "Chưa có dữ liệu";
   }
-
 
   Color getStatusColor(int activityType) {
     if (latestEndTimes.containsKey(activityType)) {
@@ -163,10 +168,7 @@ class _ListCardState extends State<ListCard> {
           decoration: BoxDecoration(
             color: bgColor,
             borderRadius: BorderRadius.circular(12),
-            border: Border.all(
-              color: borderColor,
-              width: 2,
-            ),
+            border: Border.all(color: borderColor, width: 2),
           ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -195,5 +197,4 @@ class _ListCardState extends State<ListCard> {
       },
     );
   }
-
 }
