@@ -151,10 +151,10 @@ class _ListCardState extends State<ListCard> {
 
         return SizedBox(
           width: double.infinity,
-          height: 100,
+          height: 80,
           child: Container(
-            margin: const EdgeInsets.only(bottom: 16),
-            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+            margin: const EdgeInsets.only(bottom: 12),
+            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
             decoration: BoxDecoration(
               color: bgColor,
               borderRadius: BorderRadius.circular(12),
@@ -172,10 +172,10 @@ class _ListCardState extends State<ListCard> {
                   style: TextStyle(
                     fontWeight: FontWeight.bold,
                     color: statusColor,
-                    fontSize: 20,
+                    fontSize: 16,
                   ),
                 ),
-                const SizedBox(height: 6),
+                const SizedBox(height: 4),
                 Text(
                   statusLabel,
                   style: TextStyle(

@@ -12,7 +12,7 @@ class LocationServices {
     try {
       log('Location data changed: ${event.snapshot.value}');
       final data = event.snapshot.value as Map<dynamic, dynamic>;
-      return Position(latitude: data['latitude'], longitude: data['longitude']);
+      return Position(latitude: double.parse(data['latitude']), longitude: double.parse(data['longitude']));
     } catch (e) {
       log('Error: ${e.toString()}');
       return Position(latitude: 0, longitude: 0);
@@ -29,6 +29,6 @@ class LocationServices {
     }
     final value = data.values.first;
 
-    return Position(latitude: value['latitude'], longitude: value['longitude']);
+    return Position(latitude: double.parse(value['latitude']), longitude: double.parse(value['longitude']));
   }
 }

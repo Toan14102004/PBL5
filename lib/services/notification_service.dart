@@ -154,6 +154,25 @@ class NotificationService {
     });
   }
 
+  DateTime parseTimestamp(String key) {
+    try{
+    final year = int.parse(key.substring(0, 4));
+    final month = int.parse(key.substring(4, 6));
+    final date = int.parse(key.substring(6, 8));
+    final hour = int.parse(key.substring(8, 10));
+    final min = int.parse(key.substring(10, 12));
+    final sec = int.parse(key.substring(12, 14));
+    log('alo: ${year} ${month} ${date} ${hour} ${min} ${sec}');
+    // return DateFormat("yyyyMMdd").parse(rawTimestamp);
+    return DateTime(
+      year, month, date, hour, min, sec);
+    }
+        catch(e){
+      return DateTime.now();
+    }
+  }
+
+
   Stream<List<ActivityNotification>> listenToLocations(String userId) {
     final ref = FirebaseDatabase.instance.ref("location");
     log("Listening to locations...");
@@ -171,28 +190,30 @@ class NotificationService {
 
         if (record['user_id'] != userId) continue;
 
-        final groupStart = DateTime.parse(record['start_time']);
-        final date = DateFormat('dd/MM/yyyy').format(groupStart);
-        double lat = record['latitude'];
-        double long = record['longitude'];
+        // final groupStart = DateTime.parse(record['start_time']);
+        // final date = DateFormat('dd/MM/yyyy').format(groupStart);
+        final key = entry.key;
+        final date = parseTimestamp(key);
+        double lat = double.parse(record['latitude']);
+        double long = double.parse(record['longitude']);
 
         void handleGroup() {
           ActivityNotification? notification;
 
           notification = ActivityNotification(
-            title: "🚨 Cảnh báo té ngã!",
+            title: "🚨 Cảnh báo té ngãa!",
             content:
-                "Phát hiện một cú ngã vào $date lúc ${DateFormat.Hm().format(groupStart)}. Hãy kiểm tra vị trí!",
-            timestamp: groupStart,
+                "Phát hiện một cú ngã vào $date lúc ${date.hour}:${date.minute}. Hãy kiểm tra vị trí!",
+            timestamp: date,
             data: LatLng(lat, long),
           );
 
           notifications.add(notification);
-          NotificationLocalService.show(
-            "🚨 Cảnh báo té ngã!",
-            "Phát hiện một cú ngã vào $date lúc ${DateFormat.Hm().format(groupStart)}. Nhấn để xem vị trí.",
-            payload: "fall:$lat:$long",
-          );
+          // NotificationLocalService.show(
+          //   "🚨 Cảnh báo té ngã!",
+          //   "Phát hiện một cú ngã vào $date lúc ${date.hour}:${date.minute}. Hãy kiểm tra vị trí!",
+          //   payload: "fall:$lat:$long",
+          // );
         }
 
         handleGroup();

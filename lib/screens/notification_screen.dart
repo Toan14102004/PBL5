@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:health_app_ui/screens/map_screen.dart';
@@ -109,6 +111,7 @@ class _NotificationScreenState extends State<NotificationScreen> {
     final title = notification.title;
     final content = notification.content;
     LatLng? location = notification.data as LatLng?;
+    log('${notification.data}');
 
     return Container(
       margin: const EdgeInsets.symmetric(vertical: 6),
