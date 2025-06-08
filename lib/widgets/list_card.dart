@@ -87,9 +87,7 @@ class _ListCardState extends State<ListCard> {
 
   String getStatusLabel(int activityType) {
     if (latestEndTimes.containsKey(activityType)) {
-      final formattedTime = DateFormat(
-        'dd/MM/yyyy HH:mm:ss',
-      ).format(latestEndTimes[activityType]!);
+      final formattedTime = DateFormat('dd/MM/yyyy HH:mm:ss').format(latestEndTimes[activityType]!);
       return "Kết thúc lúc: $formattedTime";
     }
     return "Chưa có dữ liệu";
@@ -103,11 +101,8 @@ class _ListCardState extends State<ListCard> {
   }
 
   @override
-  @override
   Widget build(BuildContext context) {
     final now = DateTime.now();
-
-    // Tìm activity có end_time lớn nhất (gần đây nhất)
     int? latestActivityType;
     DateTime? maxEndTime;
 
@@ -118,16 +113,13 @@ class _ListCardState extends State<ListCard> {
       }
     });
 
-    return ListView.builder(
-      padding: const EdgeInsets.all(16),
-      shrinkWrap: true,
-      itemCount: activityLabels.length,
-      itemBuilder: (context, index) {
+    return Column(
+      children: List.generate(activityLabels.length, (index) {
         final activityType = index + 1;
         final label = activityLabels[activityType]!;
 
         final hasData = latestEndTimes.containsKey(activityType);
-
+        final now = DateTime.now();
         Color bgColor;
         Color borderColor;
         Color statusColor;
@@ -137,24 +129,19 @@ class _ListCardState extends State<ListCard> {
           final diff = now.difference(endTime);
 
           if (diff.inSeconds <= 10) {
-            // Đang diễn ra: màu xanh
             bgColor = Colors.green.shade300;
             borderColor = Colors.green.shade700;
             statusColor = Colors.green.shade900;
           } else if (activityType == latestActivityType) {
-            // Chỉ hành động gần nhất nhưng không đang diễn ra → màu đỏ nhạt
             bgColor = Colors.red.shade100;
             borderColor = Colors.red.shade400;
             statusColor = Colors.red.shade700;
           } else {
-            // Có dữ liệu nhưng không thỏa 2 điều trên → xám nhạt
             bgColor = Colors.blue.shade100;
             borderColor = Colors.transparent;
             statusColor = Colors.black54;
           }
         } else {
-          // Không có dữ liệu → xám nhạt
-          // bgColor = Colors.grey.shade200;
           bgColor = Colors.blue.shade100;
           borderColor = Colors.transparent;
           statusColor = Colors.black54;
@@ -162,39 +149,47 @@ class _ListCardState extends State<ListCard> {
 
         final statusLabel = getStatusLabel(activityType);
 
-        return Container(
-          margin: const EdgeInsets.only(bottom: 16),
-          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-          decoration: BoxDecoration(
-            color: bgColor,
-            borderRadius: BorderRadius.circular(12),
-            border: Border.all(color: borderColor, width: 2),
-          ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Text(
-                label,
-                style: TextStyle(
-                  fontWeight: FontWeight.bold,
-                  color: statusColor,
-                  fontSize: 20,
-                ),
+        return SizedBox(
+          width: double.infinity,
+          height: 100,
+          child: Container(
+            margin: const EdgeInsets.only(bottom: 16),
+            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+            decoration: BoxDecoration(
+              color: bgColor,
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(
+                color: borderColor,
+                width: 2,
               ),
-              const SizedBox(height: 6),
-              Text(
-                statusLabel,
-                style: TextStyle(
-                  fontSize: 14,
-                  fontWeight: FontWeight.w500,
-                  color: statusColor,
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisAlignment: MainAxisAlignment.center, // căn giữa nội dung theo chiều dọc
+              children: [
+                Text(
+                  label,
+                  style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                    color: statusColor,
+                    fontSize: 20,
+                  ),
                 ),
-              ),
-            ],
+                const SizedBox(height: 6),
+                Text(
+                  statusLabel,
+                  style: TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w500,
+                    color: statusColor,
+                  ),
+                ),
+              ],
+            ),
           ),
         );
-      },
+      }),
     );
   }
+
 }

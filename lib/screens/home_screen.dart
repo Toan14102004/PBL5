@@ -67,6 +67,7 @@ class _HomeContentState extends State<HomeContent> {
   List<Article> _articles = [];
   bool _isLoading = true;
   int visibleCount = 5;
+  late CalorieCalculator _calculator;
   double _totalCalories = 0.0;
   int _totalMovingTime = 0; // đơn vị: giây
 
@@ -75,31 +76,25 @@ class _HomeContentState extends State<HomeContent> {
     super.initState();
     NotificationLocalService.requestPermission();
     fetchArticles();
-    fetchAndCalculateCalories();
-    fetchAndCalculateMovingTime();
+    // fetchAndCalculateMovingTime();
     NotificationLocalService.getDeviceToken();
-  }
 
-  Future<void> fetchAndCalculateCalories() async {
-    final calculator = CalorieCalculator(userId: widget.userId);
-    calculator.listenToRealtime((RealtimeResult result) {
+    _calculator = CalorieCalculator(userId: widget.userId);
+    _calculator.listenToRealtime((RealtimeResult result) {
       setState(() {
         _totalCalories = result.calories;
-      });
-      log('🔥 Kcal: ${result.calories.toStringAsFixed(2)}');
-    });
-  }
-
-  Future<void> fetchAndCalculateMovingTime() async {
-    final calculator = CalorieCalculator(userId: widget.userId);
-    calculator.listenToRealtime((RealtimeResult result) {
-      setState(() {
         _totalMovingTime = result.movingTimeSeconds;
       });
+      log('🔥 Kcal: ${result.calories.toStringAsFixed(2)}');
       log('⏱️ Di chuyển: ${result.movingTimeSeconds} giây');
     });
   }
 
+  @override
+  void dispose() {
+    _calculator.dispose();
+    super.dispose();
+  }
   String formatDuration(int totalSeconds) {
     final hours = totalSeconds ~/ 3600;
     final minutes = (totalSeconds % 3600) ~/ 60;
@@ -111,22 +106,19 @@ class _HomeContentState extends State<HomeContent> {
   }
 
   Future<void> fetchArticles() async {
-    final response = await http.get(
-      Uri.parse(
-        'https://newsapi.org/v2/top-headlines?country=us&category=health&apiKey=439e9cb051f84ad68e694370e90eeeb3',
-      ),
-    );
+    final response = await http.get(Uri.parse(
+      'https://newsapi.org/v2/top-headlines?country=us&category=health&apiKey=439e9cb051f84ad68e694370e90eeeb3',
+    ));
 
     if (response.statusCode == 200) {
       final Map<String, dynamic> jsonData = json.decode(response.body);
       final List<dynamic> articlesJson = jsonData['articles'];
 
       setState(() {
-        _articles =
-            articlesJson
-                .map((jsonItem) => Article.fromJson(jsonItem))
-                .where((a) => a.imageUrl.isNotEmpty)
-                .toList();
+        _articles = articlesJson
+            .map((jsonItem) => Article.fromJson(jsonItem))
+            .where((a) => a.imageUrl.isNotEmpty)
+            .toList();
         _isLoading = false;
       });
     } else {
@@ -143,47 +135,41 @@ class _HomeContentState extends State<HomeContent> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          HealthCard(
-            title: "🏃 Di chuyển",
-            value: "0 m",
-            onTap: () => _navigateToActivityScreen(context),
-          ),
-          HealthCard(
-            title: "⏱ Thời gian",
-            value: formatDuration(_totalMovingTime),
-            onTap: () => _navigateToActivityScreen(context),
-          ),
-          HealthCard(
-            title: "🔥 Kcal đốt cháy",
-            value: "${_totalCalories.toStringAsFixed(2)} kcal",
-            onTap: () => _navigateToActivityScreen(context),
-          ),
+            HealthCard(title: "🏃 Di chuyển", value: "0 m", onTap: () => _navigateToActivityScreen(context)),
+            HealthCard(
+              title: "⏱ Thời gian",
+              value: formatDuration(_totalMovingTime),
+              onTap: () => _navigateToActivityScreen(context),
+            ),
+            HealthCard(
+                title: "🔥 Kcal đốt cháy",
+                value: "${_totalCalories.toStringAsFixed(2)} kcal",
+                onTap: () => _navigateToActivityScreen(context),
+              ),
           Center(
-            child: Padding(
-              padding: const EdgeInsets.symmetric(vertical: 16.0),
-              child: ElevatedButton.icon(
-                onPressed: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => const RunningScreen(),
+              child: Padding(
+                padding: const EdgeInsets.symmetric(vertical: 16.0),
+                child: ElevatedButton.icon(
+                  onPressed: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) => const RunningScreen()),
+                    );
+                  },
+                  icon: Icon(Icons.directions_run),
+                  label: Text("Bắt đầu chạy bộ"),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.blue,
+                    foregroundColor: Colors.white,
+                    padding: EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                    textStyle: TextStyle(fontSize: 16),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
                     ),
-                  );
-                },
-                icon: Icon(Icons.directions_run),
-                label: Text("Bắt đầu chạy bộ"),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.blue,
-                  foregroundColor: Colors.white,
-                  padding: EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-                  textStyle: TextStyle(fontSize: 16),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
                   ),
                 ),
               ),
             ),
-          ),
 
           // Biểu đồ hình tròn
           Padding(
@@ -251,10 +237,7 @@ class _HomeContentState extends State<HomeContent> {
           ListView.builder(
             shrinkWrap: true,
             physics: NeverScrollableScrollPhysics(),
-            itemCount:
-                visibleCount < _articles.length
-                    ? visibleCount
-                    : _articles.length,
+            itemCount: visibleCount < _articles.length ? visibleCount : _articles.length,
             itemBuilder: (context, index) {
               return _buildArticleItem(_articles[index]);
             },
@@ -292,9 +275,7 @@ class _HomeContentState extends State<HomeContent> {
   void _navigateToActivityScreen(BuildContext context) {
     Navigator.push(
       context,
-      MaterialPageRoute(
-        builder: (context) => ActivityScreen(userId: widget.userId),
-      ),
+      MaterialPageRoute(builder: (context) =>  ActivityScreen(userId: widget.userId)),
     );
   }
 
@@ -312,8 +293,7 @@ class _HomeContentState extends State<HomeContent> {
             width: 80,
             height: 80,
             fit: BoxFit.cover,
-            errorBuilder:
-                (context, error, stackTrace) => Icon(Icons.broken_image),
+            errorBuilder: (context, error, stackTrace) => Icon(Icons.broken_image),
           ),
         ),
         title: Text(
