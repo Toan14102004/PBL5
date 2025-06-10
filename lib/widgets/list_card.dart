@@ -1,4 +1,5 @@
 import 'dart:developer';
+import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:firebase_database/firebase_database.dart';
@@ -18,28 +19,28 @@ class _ListCardState extends State<ListCard> {
     3: "🐥 Đứng",
     4: "🛌 Nằm",
     5: "🏃 Chạy bộ",
-    6: "🧘 Đi cầu thang",
+    6: "🧗 Đi cầu thang",
     7: "🚴 Đạp xe",
     8: "⚠️ Té ngã",
   };
 
-  // Lưu end_time gần nhất cho từng activityType
   final Map<int, DateTime> latestEndTimes = {};
+  late final StreamSubscription<DatabaseEvent> _activitySubscription;
 
   @override
   void initState() {
     super.initState();
-    fetchLatestActivities();
+    listenToActivityChanges();
   }
 
-  void fetchLatestActivities() async {
-    try {
-      final dbRef = FirebaseDatabase.instance.ref();
-      final snapshot = await dbRef.get();
-      log("Snapshot value: ${snapshot.value}");
+  void listenToActivityChanges() {
+    final dbRef = FirebaseDatabase.instance.ref();
+
+    _activitySubscription = dbRef.onValue.listen((event) {
+      final snapshot = event.snapshot;
+      log("Snapshot value (realtime): ${snapshot.value}");
 
       if (snapshot.exists) {
-        // Mỗi activityType giữ record có end_time lớn nhất
         Map<int, DateTime> tempLatestEndTimes = {};
 
         final data = snapshot.value;
@@ -56,7 +57,6 @@ class _ListCardState extends State<ListCard> {
                       DateTime endTime = DateTime.parse(r["end_time"]);
                       int activityType = r["activityType"];
 
-                      // Nếu chưa có hoặc tìm được end_time mới hơn thì cập nhật
                       if (!tempLatestEndTimes.containsKey(activityType) ||
                           endTime.isAfter(tempLatestEndTimes[activityType]!)) {
                         tempLatestEndTimes[activityType] = endTime;
@@ -72,22 +72,20 @@ class _ListCardState extends State<ListCard> {
         }
 
         setState(() {
-          latestEndTimes.clear();
-          latestEndTimes.addAll(tempLatestEndTimes);
+          latestEndTimes
+            ..clear()
+            ..addAll(tempLatestEndTimes);
         });
 
-        log("Latest end times by activity: $latestEndTimes");
-      } else {
-        log("Snapshot không tồn tại");
+        log("Cập nhật realtime: $latestEndTimes");
       }
-    } catch (e) {
-      log("Lỗi khi fetch activity: $e");
-    }
+    });
   }
 
   String getStatusLabel(int activityType) {
     if (latestEndTimes.containsKey(activityType)) {
-      final formattedTime = DateFormat('dd/MM/yyyy HH:mm:ss').format(latestEndTimes[activityType]!);
+      final formattedTime = DateFormat('dd/MM/yyyy HH:mm:ss')
+          .format(latestEndTimes[activityType]!);
       return "Kết thúc lúc: $formattedTime";
     }
     return "Chưa có dữ liệu";
@@ -101,11 +99,20 @@ class _ListCardState extends State<ListCard> {
   }
 
   @override
+  void dispose() {
+    _activitySubscription.cancel();
+    super.dispose();
+  }
+
+  @override
+
+  @override
   Widget build(BuildContext context) {
     final now = DateTime.now();
     int? latestActivityType;
     DateTime? maxEndTime;
 
+    // Tìm hoạt động gần nhất
     latestEndTimes.forEach((activityType, endTime) {
       if (maxEndTime == null || endTime.isAfter(maxEndTime!)) {
         maxEndTime = endTime;
@@ -119,7 +126,6 @@ class _ListCardState extends State<ListCard> {
         final label = activityLabels[activityType]!;
 
         final hasData = latestEndTimes.containsKey(activityType);
-        final now = DateTime.now();
         Color bgColor;
         Color borderColor;
         Color statusColor;
@@ -128,20 +134,24 @@ class _ListCardState extends State<ListCard> {
           final endTime = latestEndTimes[activityType]!;
           final diff = now.difference(endTime);
 
-          if (diff.inSeconds <= 10) {
+          if (activityType == latestActivityType && diff.inSeconds <= 10) {
+            // CHỈ hoạt động mới nhất và trong vòng 10 giây => màu xanh
             bgColor = Colors.green.shade300;
             borderColor = Colors.green.shade700;
             statusColor = Colors.green.shade900;
           } else if (activityType == latestActivityType) {
+            // Nếu là hoạt động mới nhất nhưng quá 10s => màu đỏ nhạt
             bgColor = Colors.red.shade100;
             borderColor = Colors.red.shade400;
             statusColor = Colors.red.shade700;
           } else {
+            // Các hoạt động khác có dữ liệu => xanh dương nhạt
             bgColor = Colors.blue.shade100;
             borderColor = Colors.transparent;
             statusColor = Colors.black54;
           }
         } else {
+          // Chưa có dữ liệu
           bgColor = Colors.blue.shade100;
           borderColor = Colors.transparent;
           statusColor = Colors.black54;
@@ -165,7 +175,7 @@ class _ListCardState extends State<ListCard> {
             ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisAlignment: MainAxisAlignment.center, // căn giữa nội dung theo chiều dọc
+              mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 Text(
                   label,

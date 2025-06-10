@@ -131,7 +131,7 @@ class CalorieCalculator {
           "total_moving_time_seconds": totalMovingSeconds,
         });
 
-        log(' Đã cập nhật dữ liệu lên Firebase cho ngày $today');
+        // log(' Đã cập nhật dữ liệu lên Firebase cho ngày $today');
       });
     });
   }

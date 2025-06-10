@@ -287,7 +287,7 @@ class _FitnessScreenState extends State<FitnessScreen> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               operatingEnergy(
-                "🔥 𝓝𝓪̆𝓷𝓰 𝓵𝓾̛𝓸̛̣𝓷𝓰 𝓱𝓸𝓪̣𝓽 𝓭𝓸̣̂𝓷𝓰",
+                "🔥 Năng lượng hoạt động",
                 _calculateAverageCalories(caloriesData).toString(),
               ),
               const SizedBox(height: 30),
@@ -300,7 +300,7 @@ class _FitnessScreenState extends State<FitnessScreen> {
 
               const SizedBox(height: 35),
               averageTimeOfExercise(
-                "⏰  𝓢𝓸̂́ 𝓹𝓱𝓾́𝓽 𝓽𝓱𝓮̂̉ 𝓭𝓾̣𝓬",
+                "⏰ Thời gian vận động tuần qua",
                 (_calculateAverageMovement(movementData) ~/ 60).toString(),
               ),
               const SizedBox(height: 30),

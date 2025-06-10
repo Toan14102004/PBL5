@@ -264,7 +264,7 @@ class PieChartScreen extends StatelessWidget {
         log("Không có dữ liệu trong Firebase.");
       }
 
-      log("Tổng số bản ghi hôm nay: ${records.length}");
+      // log("Tổng số bản ghi hôm nay: ${records.length}");
       return records;
     });
   }
